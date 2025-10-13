@@ -1,8 +1,11 @@
+let currentEffect = null;
+
 export function createSignal(initialValue) {
     let value = initialValue;
     const subscribers = new Set();
 
     const getter = () => {
+        if (currentEffect) subscribers.add(currentEffect);
         return value;
     };
 
@@ -12,4 +15,14 @@ export function createSignal(initialValue) {
     };
 
     return [getter, setter];
+};
+
+export function createEffect(fn) {
+    const effect = () => {
+        currentEffect = effect;
+        fn();
+        currentEffect = null;
+    };
+
+    effect();
 };
