@@ -30,5 +30,8 @@
     "signals",
     "vanilla-js",
     "reactivity"
-  ]
+  ],
+  "devDependencies": {
+    "esbuild": "^0.25.10"
+  }
 }
