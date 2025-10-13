@@ -12,7 +12,8 @@
     "dist/hamsterjs.min.js"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node build.config.js --watch",
+    "build": "node build.config.js"
   },
   "homepage": "https://github.com/BoBch27/hamster.js#readme",
   "bugs": {
