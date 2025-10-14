@@ -1,4 +1,4 @@
-import { createSignal } from "./signal.js";
+import { createSignal, createEffect } from "./signal.js";
 
 // store reactive contexts for each element with x-data
 const contexts = new WeakMap();
@@ -23,6 +23,16 @@ function processElement(el) {
     if (el.hasAttribute('x-data')) {
         initData(el);
     }
+
+    // get reactive context (from this element or inherited from parent)
+    const context = getContext(el);
+
+    // process all other directives on this element
+    getDirectives(el).forEach((directive) => {
+        if (directive.name.split(':')[0] == 'x-text') {
+            bindText(el, directive.value, context);
+        }
+    });
 
     // process children recursively
     Array.from(el.children).forEach(child => processElement(child));
@@ -96,6 +106,24 @@ function initData(el) {
 
     // store context in WeakMap for this element
     contexts.set(el, context);
+};
+
+// implement x-text directive for reactive text content
+function bindText(el, expr, context) {
+    if (!context) return;
+  
+    // create effect that automatically re-runs when signals change
+    createEffect(() => {
+        try {
+            // evaluate the expression (e.g., "count" or "firstName + ' ' + lastName")
+            const value = evaluate(expr, context);
+
+            // update the text content (converts undefined/null to empty string)
+            el.textContent = value ?? '';
+        } catch (e) {
+            console.error('[x-text] Error:', e);
+        }
+    });
 };
 
 // evaluate JS expression in the context of reactive data
