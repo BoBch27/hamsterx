@@ -1,19 +1,48 @@
-// Reactive signal and effect system
+/**
+ * Core reactive signal and effect system
+ * ---------------------------------------
+ * Simple, functional, reactive primitives based on signals.
+ * Effects automatically track signal dependencies and re-run when they change.
+ * 
+ * @module signals
+ */
+
+/**
+ * Current effect being executed (for automatic dependency tracking)
+ * @type {Function|null}
+ */
 let currentEffect = null;
+
+/**
+ * Stack of effects (handles nested effects properly)
+ * @type {Array<Function>}
+ */
 const effectStack = [];
 
 /**
  * createSignal
  * ------------
  * Creates a reactive value (signal). Returns [getter, setter].
- *
- * Reading the signal inside a createEffect will auto-subscribe the effect.
+ * 
+ * Reading the signal inside a createEffect will automatically subscribe
+ * the effect to changes. When the signal updates, all subscribed effects re-run.
+ * 
+ * Example:
+ * ```js
+ *   const [count, setCount] = createSignal(0);
+ *   createEffect(() => console.log(count())); // logs: 0
+ *   setCount(5); // logs: 5`
+ * 
+ * ```
+ * @param {*} initialValue - The initial value for the signal
+ * @returns {Array} Tuple of [getter, setter] functions
  */
 export function createSignal(initialValue) {
     let value = initialValue;
     const subscribers = new Set();
 
     const getter = () => {
+        // If called within an effect, auto-subscribe
         if (currentEffect) subscribers.add(currentEffect);
         return value;
     };
@@ -42,10 +71,27 @@ export function createSignal(initialValue) {
  * ------------
  * Runs a reactive function immediately, and re-runs whenever
  * any signal used inside it changes.
+ * 
+ * The effect automatically tracks which signals it depends on by
+ * monitoring signal reads during execution. When any dependency changes,
+ * the effect re-runs.
+ * 
+ * Supports nested effects properly using an effect stack to preserve context.
+ * 
+ * Example:
+ * ```js
+ *   const [count, setCount] = createSignal(0);
+ *   createEffect(() => {
+ *     console.log('Count is:', count());
+ *   });
+ *   setCount(1); // Effect re-runs, logs: "Count is: 1"
+ * 
+ * ```
+ * @param {Function} fn - The reactive function to execute
  */
 export function createEffect(fn) {
     const effect = () => {
-        // Push to stack (handles nested effects)
+        // Save current effect and push to stack (handles nested effects)
         currentEffect = effect;
         effectStack.push(effect);
         
@@ -58,5 +104,6 @@ export function createEffect(fn) {
         }
     };
 
+    // Run immediately to establish initial dependencies
     effect();
 };

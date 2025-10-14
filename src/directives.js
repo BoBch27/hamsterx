@@ -1,12 +1,35 @@
 import { createSignal, createEffect } from "./signal.js";
 
-// store reactive contexts for each element with x-data
+/**
+ * Directive system
+ * -------------------------------------
+ * Using module-level closures (similar to signals).
+ * Handles various "x-*" HTML attributes.
+ * 
+ * @module directives
+ */
+
+/**
+ * Stores reactive contexts for each element with x-data. Automatically 
+ * garbage collects when elements are removed from DOM.
+ * @type {WeakMap}
+ */
 const contexts = new WeakMap();
 
-// prevent multiple initialisations
+/**
+ * Flag to prevent multiple initialisations.
+ * @type {boolean}
+ */
 let initialised = false;
 
-// scan DOM and process all directives
+/**
+ * init
+ * ----
+ * Main entry point - scans the DOM and processes all directives.
+ * Can be called manually or runs automatically on DOMContentLoaded.
+ * 
+ * @param {HTMLElement} root - Element to start scanning from (default: document.body)
+ */
 export function init(root = document.body) {
     if (initialised) return;
 
@@ -14,60 +37,91 @@ export function init(root = document.body) {
     initialised = true;
 };
 
-// process element and its children
+/**
+ * processElement
+ * --------------
+ * Recursively processes an element and all its children.
+ * Order matters: x-data must be processed first to establish context.
+ * 
+ * @param {HTMLElement} el - Element to process
+ */
 function processElement(el) {
-    // only process element nodes
+    // Skip text nodes, comments, etc - only process element nodes
     if (el.nodeType !== 1) return;
 
-    // process x-data first
+    // Process x-data first to establish "scope" for all other directives
     if (el.hasAttribute('x-data')) {
         initData(el);
     }
 
-    // get reactive context (from this element or inherited from parent)
+    // Get the reactive context (from this element or inherited from parent)
     const context = getContext(el);
 
-    // process all other directives on this element
+    // Process all other directives on this element
     getDirectives(el).forEach((directive) => {
         if (directive.name.split(':')[0] == 'x-text') {
             bindText(el, directive.value, context);
         }
     });
 
-    // process children recursively
+    // Process children recursively
     Array.from(el.children).forEach(child => processElement(child));
 };
 
-// extract all x-* attributes from an element
+/**
+ * getDirectives
+ * -------------
+ * Extracts all x-* attributes from an element.
+ * 
+ * @param {HTMLElement} el - Element to scan
+ * @returns {Array} Array of {name, value} objects
+ */
 function getDirectives(el) {
     return Array.from(el.attributes)
         .filter(attr => attr.name.startsWith('x-'))
         .map(attr => ({ name: attr.name, value: attr.value }));
 };
 
-// retrieve reactive context for an element
+/**
+ * getContext
+ * ----------
+ * Retrieves the reactive context for an element.
+ * Walks up the DOM tree to find the nearest x-data parent if needed.
+ * 
+ * @param {HTMLElement} el - Element to get context for
+ * @returns {Object|null} Context object or null if no x-data parent found
+ */
 function getContext(el) {
-    // check if element has its own context
+    // Check if this element has its own context
     if (contexts.has(el)) return contexts.get(el);
     
-    // otherwise inherit from parent
+     // Otherwise, inherit from parent
     let parent = el.parentElement;
     while (parent) {
         if (contexts.has(parent)) return contexts.get(parent);
         parent = parent.parentElement;
     }
 
-    // no context found
+    // No context found
     return null;
 };
 
-// process x-data attribute and create reactive context
+/**
+ * initData
+ * --------
+ * Processes x-data attribute and creates a reactive context.
+ * Wraps each data property in a signal for automatic reactivity.
+ * 
+ * Example: `x-data="{ count: 0, name: 'John' }"`
+ * 
+ * @param {HTMLElement} el - Element with x-data attribute
+ */
 function initData(el) {
     const expr = el.getAttribute('x-data');
     let data = {};
 
     try {
-        // parse JS object expression (e.g. "{ count: 0 }" becomes an actual object)
+        // Parse the JavaScript object expression (e.g. "{ count: 0 }" becomes an actual object)
         if (expr.trim()) {
             const fn = new Function(`return ${expr}`);
             data = fn();
@@ -77,17 +131,17 @@ function initData(el) {
         return;
     }
 
-    // create signals for each property
+    // Create signals for each property to every property automatically reactive
     const signals = {};
     const proxy = {};
 
     Object.keys(data).forEach(key => {
         const [get, set] = createSignal(data[key]);
 
-        // store signal for potential cleanup later
+        // Store signal for potential cleanup later
         signals[key] = { get, set };
 
-        // create proxy property that reads/writes to the signal
+        // Create proxy property that reads/writes to the signal
         // context.data.count++ actually calls set(get() + 1)
         Object.defineProperty(proxy, key, {
             get() { return get(); },
@@ -96,29 +150,40 @@ function initData(el) {
         });
     });
 
-    // create the context object
+    // Create the context object that gets passed to all directives
     const context = {
         data: proxy, // Reactive data proxy
-        signals, // raw signals
-        el, // the element itself
+        signals, // Raw signals (for advanced use)
+        el, // The element itself
         $el: el // Alpine.js compatible alias
     };
 
-    // store context in WeakMap for this element
+    // Store context in WeakMap for this element
     contexts.set(el, context);
 };
 
-// implement x-text directive for reactive text content
+/**
+ * bindText
+ * --------
+ * Implements x-text directive for reactive text content.
+ * Creates an effect that re-runs whenever dependencies change.
+ * 
+ * Example: `<span x-text="count"></span>`
+ * 
+ * @param {HTMLElement} el - Element to bind text to
+ * @param {string} expr - JavaScript expression to evaluate
+ * @param {Object} context - Reactive context
+ */
 function bindText(el, expr, context) {
     if (!context) return;
   
-    // create effect that automatically re-runs when signals change
+     // Create an effect that automatically re-runs when signals change
     createEffect(() => {
         try {
-            // evaluate the expression (e.g., "count" or "firstName + ' ' + lastName")
+            // Evaluate the expression (e.g., "count" or "firstName + ' ' + lastName")
             const value = evaluate(expr, context);
 
-            // update the text content (converts undefined/null to empty string)
+            // Update the text content (converts undefined/null to empty string)
             el.textContent = value ?? '';
         } catch (e) {
             console.error('[x-text] Error:', e);
@@ -126,18 +191,29 @@ function bindText(el, expr, context) {
     });
 };
 
-// evaluate JS expression in the context of reactive data
+/**
+ * evaluate
+ * --------
+ * Evaluates a JavaScript expression in the context of reactive data.
+ * Expression has access to all data properties directly (via 'with' statement).
+ * 
+ * Example: `evaluate("count + 1", context)` where count is in context.data
+ * 
+ * @param {string} expr - JavaScript expression
+ * @param {Object} context - Reactive context
+ * @returns {*} Result of expression evaluation
+ */
 function evaluate(expr, context) {
     try {
-        // create func that evaluates the expression
-        // the 'with' statement allows "count" instead of "$data.count"
+        // Create a function that evaluates the expression
+        // The 'with' statement allows: "count" instead of "$data.count"
         const fn = new Function('$data', '$el', `
             with($data) {
                 return ${expr};
             }
         `);
         
-        // execute and return result
+        // Execute and return result
         return fn(context.data, context.el);
     } catch (e) {
         console.error('[evaluate] Error:', expr, e);
