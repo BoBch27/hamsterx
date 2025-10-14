@@ -28,6 +28,29 @@ function processElement(el) {
     Array.from(el.children).forEach(child => processElement(child));
 };
 
+// extract all x-* attributes from an element
+function getDirectives(el) {
+    return Array.from(el.attributes)
+        .filter(attr => attr.name.startsWith('x-'))
+        .map(attr => ({ name: attr.name, value: attr.value }));
+};
+
+// retrieve reactive context for an element
+function getContext(el) {
+    // check if element has its own context
+    if (contexts.has(el)) return contexts.get(el);
+    
+    // otherwise inherit from parent
+    let parent = el.parentElement;
+    while (parent) {
+        if (contexts.has(parent)) return contexts.get(parent);
+        parent = parent.parentElement;
+    }
+
+    // no context found
+    return null;
+};
+
 // process x-data attribute and create reactive context
 function initData(el) {
     const expr = el.getAttribute('x-data');
