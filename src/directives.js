@@ -66,6 +66,9 @@ function processElement(el) {
         case 'x-text':
             bindText(el, value, context);
             break;
+        case 'x-show':
+            bindShow(el, value, context);
+            break;
         case 'x-on':
             bindEvent(el, modifier, value, context);
             break;
@@ -195,6 +198,32 @@ function bindText(el, expr, context) {
             el.textContent = value ?? '';
         } catch (e) {
             console.error('[x-text] Error:', e);
+        }
+    });
+};
+
+/**
+ * bindShow
+ * --------
+ * Implements x-show directive for conditional visibility.
+ * Toggles display CSS property based on expression truthiness.
+ * 
+ * Example: `<div x-show="isVisible">Content</div>`
+ * 
+ * @param {HTMLElement} el - Element to show/hide
+ * @param {string} expr - JavaScript expression to evaluate
+ * @param {Object} context - Reactive context
+ */
+function bindShow(el, expr, context) {
+    if (!context) return;
+    
+    createEffect(() => {
+        try {
+            // Evaluate expression as boolean
+            const show = evaluate(expr, context);
+            el.style.display = show ? 'display' : 'none';
+        } catch (e) {
+            console.error('[x-show] Error:', e);
         }
     });
 };
