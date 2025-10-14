@@ -97,3 +97,22 @@ function initData(el) {
     // store context in WeakMap for this element
     contexts.set(el, context);
 };
+
+// evaluate JS expression in the context of reactive data
+function evaluate(expr, context) {
+    try {
+        // create func that evaluates the expression
+        // the 'with' statement allows "count" instead of "$data.count"
+        const fn = new Function('$data', '$el', `
+            with($data) {
+                return ${expr};
+            }
+        `);
+        
+        // execute and return result
+        return fn(context.data, context.el);
+    } catch (e) {
+        console.error('[evaluate] Error:', expr, e);
+        return null;
+    }
+};
