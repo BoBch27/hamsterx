@@ -58,9 +58,17 @@ function processElement(el) {
     const context = getContext(el);
 
     // Process all other directives on this element
-    getDirectives(el).forEach((directive) => {
-        if (directive.name.split(':')[0] == 'x-text') {
-            bindText(el, directive.value, context);
+    getDirectives(el).forEach(({ name, value }) => {
+        // Split directive name to handle modifiers (e.g. "x-on:click" -> ["x-on", "click"])
+        const [directive, modifier] = name.split(':');
+        
+        switch(directive) {
+        case 'x-text':
+            bindText(el, value, context);
+            break;
+        case 'x-on':
+            bindEvent(el, modifier, value, context);
+            break;
         }
     });
 
@@ -189,6 +197,46 @@ function bindText(el, expr, context) {
             console.error('[x-text] Error:', e);
         }
     });
+};
+
+/**
+ * bindEvent
+ * ---------
+ * Implements x-on directive for event handling.
+ * Attaches event listeners that can access reactive data.
+ * 
+ * Example: `<button x-on:click="count++">Increment</button>`
+ * 
+ * @param {HTMLElement} el - Element to attach listener to
+ * @param {string} eventName - Event name (e.g., "click", "input")
+ * @param {string} expr - JavaScript code to execute
+ * @param {Object} context - Reactive context
+ */
+function bindEvent(el, eventName, expr, context) {
+    if (!context || !eventName) return;
+
+    // Create event handler function
+    const handler = (e) => {
+        try {
+            // Create a function with access to:
+            // - $event: the native event object
+            // - $el: the element itself
+            // - $data: the reactive data (via 'with' statement)
+            const fn = new Function('$event', '$el', '$data', `
+                with($data) {
+                    ${expr}
+                }
+            `);
+        
+            // Execute the handler with proper context
+            fn.call(context.data, e, el, context.data);
+        } catch (err) {
+            console.error(`[x-on:${eventName}] Error:`, err);
+        }
+    };
+
+    // Attach the event listener
+    el.addEventListener(eventName, handler);
 };
 
 /**
