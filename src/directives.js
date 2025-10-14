@@ -217,11 +217,16 @@ function bindText(el, expr, context) {
 function bindShow(el, expr, context) {
     if (!context) return;
     
+    // Store original display value to restore when showing (i.e. flex/grid, etc)
+    const originalDisplay = el.style.display;
+
     createEffect(() => {
         try {
             // Evaluate expression as boolean
             const show = evaluate(expr, context);
-            el.style.display = show ? 'display' : 'none';
+
+            // Show: restore original display, Hide: set to none
+            el.style.display = show ? (originalDisplay || '') : 'none';
         } catch (e) {
             console.error('[x-show] Error:', e);
         }
