@@ -69,16 +69,26 @@ function initData(el) {
 
     // create signals for each property
     const signals = {};
+    const proxy = {};
 
     Object.keys(data).forEach(key => {
         const [get, set] = createSignal(data[key]);
 
         // store signal for potential cleanup later
         signals[key] = { get, set };
+
+        // create proxy property that reads/writes to the signal
+        // context.data.count++ actually calls set(get() + 1)
+        Object.defineProperty(proxy, key, {
+            get() { return get(); },
+            set(val) { set(val); },
+            enumerable: true
+        });
     });
 
     // create the context object
     const context = {
+        data: proxy, // Reactive data proxy
         signals, // raw signals
         el, // the element itself
         $el: el // Alpine.js compatible alias
