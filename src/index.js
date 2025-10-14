@@ -1,6 +1,23 @@
 import * as signals from "./signal.js";
 import * as directives from "./directives.js";
 
+// Auto-init directives when DOM ready (only for browser global usage)
+if (typeof document !== 'undefined') {
+    const autoInit = () => {
+        if (document.body) {
+            console.log('🐹 Hamster.js auto-initialised');
+            directives.init();
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', autoInit);
+    } else {
+        // DOM already ready, init immediately
+        autoInit();
+    }
+}
+
 const api = { ...signals, ...directives };
 
 // expose globally, so users can use functions in inline scripts (e.g. createSignal, etc.)
