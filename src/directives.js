@@ -35,7 +35,7 @@ let initialised = false;
  */
 export function init(root = document.body) {
     if (initialised) {
-		console.warn('[🐹 init] Already initialised. Use initElement() for new elements.');
+		console.warn('🐹 [init] Hamster.js already initialised. Use initElement() for new elements.');
 		return;
 	}
 
@@ -169,7 +169,7 @@ function initData(el) {
             data = fn();
         }
     } catch (e) {
-        console.error('[x-data] Parse error:', e);
+        console.error('🐹 [x-data] Parse error: ', e);
         return;
     }
 
@@ -228,7 +228,7 @@ function bindText(el, expr, context) {
             // Update the text content (converts undefined/null to empty string)
             el.textContent = value ?? '';
         } catch (e) {
-            console.error('[x-text] Error:', e);
+            console.error('🐹 [x-text] Error: ', e);
         }
     });
 };
@@ -259,7 +259,7 @@ function bindShow(el, expr, context) {
             // Show: restore original display, Hide: set to none
             el.style.display = show ? (originalDisplay || '') : 'none';
         } catch (e) {
-            console.error('[x-show] Error:', e);
+            console.error('🐹 [x-show] Error: ', e);
         }
     });
 };
@@ -285,7 +285,7 @@ function bindFor(el, expr, context) {
 	// Matches: "item in items" or "(item, index) in items"
 	const match = expr.match(/^\s*(?:\(([^,]+),\s*([^)]+)\)|([^)\s]+))\s+in\s+(.+)$/);
 	if (!match) {
-		console.error('[x-for] Invalid syntax:', expr);
+		console.error('🐹 [x-for] Invalid syntax: ', expr);
 		return;
 	}
 
@@ -352,7 +352,7 @@ function bindFor(el, expr, context) {
 				nodes.push(clone);
 			});
 		} catch (e) {
-			console.error('[x-for] Error:', e);
+			console.error('🐹 [x-for] Error: ', e);
 		}
 	});
 };
@@ -389,7 +389,7 @@ function bindEvent(el, eventName, expr, context) {
             // Execute the handler with proper context
             fn.call(context.data, e, el, context.data);
         } catch (err) {
-            console.error(`[x-on:${eventName}] Error:`, err);
+            console.error(`🐹 [x-on:${eventName}] Error: `, err);
         }
     };
 
@@ -422,7 +422,7 @@ function evaluate(expr, context) {
         // Execute and return result
         return fn(context.data, context.el);
     } catch (e) {
-        console.error('[evaluate] Error:', expr, e);
+        console.error('🐹 [evaluate] Error: ', expr, e);
         return null;
     }
 };
@@ -438,14 +438,14 @@ function evaluate(expr, context) {
  */
 export function getData(el) {
     if (!initialised) {
-        console.warn('[getData] Hamster.js not initialised yet. Call after DOMContentLoaded or init().');
+        console.warn('🐹 [getData] Hamster.js not initialised yet. Call after DOMContentLoaded or init().');
         return null;
     }
     
     const context = contexts.get(el);
     
     if (!context) {
-        console.warn('[getData] No x-data found on element: ', el);
+        console.warn('🐹 [getData] No x-data found on element: ', el);
     }
     
     return context ? context.data : null;
