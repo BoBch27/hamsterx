@@ -35,7 +35,7 @@ let initialised = false;
  */
 export function init(root = document.body) {
     if (initialised) {
-		console.warn('🐹 [init] Hamster.js already initialised. Use initElement() for new elements.');
+		console.warn('🐹 [init] hamsterx already initialised. Use initElement() for new elements.');
 		return;
 	}
 
@@ -54,7 +54,7 @@ export function init(root = document.body) {
  *   const div = document.createElement('div');
  *   div.setAttribute('x-data', '{ count: 0 }');
  *   document.body.appendChild(div);
- *   Hamsterjs.initElement(div);
+ *   hamsterx.initElement(div);
  * 
  * ```
  * @param {HTMLElement} el - Element to process
@@ -438,7 +438,7 @@ function evaluate(expr, context) {
  */
 export function getData(el) {
     if (!initialised) {
-        console.warn('🐹 [getData] Hamster.js not initialised yet. Call after DOMContentLoaded or init().');
+        console.warn('🐹 [getData] hamsterx not initialised yet. Call after DOMContentLoaded or init().');
         return null;
     }
     

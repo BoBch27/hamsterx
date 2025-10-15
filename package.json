@@ -1,27 +1,27 @@
 {
-  "name": "hamster.js",
+  "name": "hamsterx",
   "version": "0.1.0",
   "description": "A tiny, Alpine-like reactive runtime that uses vanilla JS signals and squeaks fast 🐹",
   "type": "module",
-  "main": "dist/hamsterjs.esm.js",
+  "main": "dist/hamsterx.esm.js",
   "exports": {
-    "import": "./dist/hamsterjs.esm.js"
+    "import": "./dist/hamsterx.esm.js"
   },
   "files": [
-    "dist/hamsterjs.esm.js",
-    "dist/hamsterjs.min.js"
+    "dist/hamsterx.esm.js",
+    "dist/hamsterx.min.js"
   ],
   "scripts": {
     "dev": "node build.config.js --watch",
     "build": "node build.config.js"
   },
-  "homepage": "https://github.com/BoBch27/hamster.js#readme",
+  "homepage": "https://github.com/BoBch27/hamsterx#readme",
   "bugs": {
-    "url": "https://github.com/BoBch27/hamster.js/issues"
+    "url": "https://github.com/BoBch27/hamsterx/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/BoBch27/hamster.js.git"
+    "url": "git+https://github.com/BoBch27/hamsterx.git"
   },
   "license": "MIT",
   "author": "Bobby Donev <hello@bobbydonev.com>",

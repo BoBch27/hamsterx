@@ -27,14 +27,14 @@ const commonConfig = {
 // IIFE version for <script src="...">
 await buildOrWatch({
     ...commonConfig,
-    outfile: 'dist/hamsterjs.min.js',
+    outfile: 'dist/hamsterx.min.js',
     format: 'iife',
 }, 'IIFE');
 
 // ESM version for npm imports
 await buildOrWatch({
     ...commonConfig,
-    outfile: 'dist/hamsterjs.esm.js',
+    outfile: 'dist/hamsterx.esm.js',
     format: 'esm',
 }, 'ESM');
 
