@@ -26,12 +26,18 @@ let initialised = false;
  * init
  * ----
  * Main entry point - scans the DOM and processes all directives.
- * Can be called manually or runs automatically on DOMContentLoaded.
+ * Called automatically on DOMContentLoaded (unless disabled).
+ * Can only be called once for global initialisation.
+ * 
+ * For dynamically added elements, use initElement() instead.
  * 
  * @param {HTMLElement} root - Element to start scanning from (default: document.body)
  */
 export function init(root = document.body) {
-    if (initialised) return;
+    if (initialised) {
+		console.warn('[🐹 init] Already initialised. Use initElement() for new elements.');
+		return;
+	}
 
     processElement(root);
     initialised = true;
