@@ -450,3 +450,28 @@ export function getData(el) {
     
     return context ? context.data : null;
 };
+
+/**
+ * onReady
+ * -------
+ * Executes callback when Hamster.js is ready.
+ * If already ready, executes immediately.
+ * 
+ * @param {Function} callback - Function to execute when ready
+ */
+export function onReady(callback) {
+    if (initialised) {
+        callback();
+    } else {
+        // Wait for initialisation by checking periodically
+        const checkReady = () => {
+            if (initialised) {
+                callback();
+            } else {
+                setTimeout(checkReady, 10);
+            }
+        };
+
+        checkReady();
+    }
+};
