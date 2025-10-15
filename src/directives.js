@@ -69,14 +69,19 @@ function processElement(el) {
         case 'x-show':
             bindShow(el, value, context);
             break;
+		case 'x-for':
+            bindFor(el, value, context);
+            return; // Don't process children, x-for handles it
         case 'x-on':
             bindEvent(el, modifier, value, context);
             break;
         }
     });
 
-    // Process children recursively
-    Array.from(el.children).forEach(child => processElement(child));
+    // Process children recursively (unless x-for handled it)
+    if (!el.hasAttribute('x-for')) {
+   		Array.from(el.children).forEach(child => processElement(child));
+	}
 };
 
 /**
@@ -231,6 +236,99 @@ function bindShow(el, expr, context) {
             console.error('[x-show] Error:', e);
         }
     });
+};
+
+/**
+ * bindFor
+ * -------
+ * Implements x-for directive for list rendering.
+ * Clones a template element for each item in an array.
+ * 
+ * Supports two syntaxes:
+ * - Simple: `x-for="item in items"`
+ * - With index: `x-for="(item, index) in items"`
+ * 
+ * @param {HTMLElement} el - Template element to repeat
+ * @param {string} expr - Loop expression
+ * @param {Object} context - Reactive context
+ */
+function bindFor(el, expr, context) {
+	if (!context) return;
+
+	// Parse the expression using regex
+	// Matches: "item in items" or "(item, index) in items"
+	const match = expr.match(/^\s*(?:\(([^,]+),\s*([^)]+)\)|([^)\s]+))\s+in\s+(.+)$/);
+	if (!match) {
+		console.error('[x-for] Invalid syntax:', expr);
+		return;
+	}
+
+	// Extract variable names and array expression
+	const itemName = match[3] || match[1]; // e.g. "item"
+	const indexName = match[2] || 'index'; // e.g. "index" or "i"
+	const itemsExpr = match[4]; // e.g. "items" or "todos"
+
+	// Clone the template and remove x-for to prevent infinite loop
+	const template = el.cloneNode(true);
+	template.removeAttribute('x-for');
+	
+	// Replace original element with a comment marker
+	// This marker keeps track of where to insert rendered items
+	const parent = el.parentElement;
+	const marker = document.createComment('x-for');
+	parent.replaceChild(marker, el);
+
+	// Keep track of rendered nodes for cleanup
+	let nodes = [];
+
+	// Create effect that re-renders whenever array changes
+	createEffect(() => {
+		try {
+			// Evaluate the array expression
+			const items = evaluate(itemsExpr, context);
+			
+			// Clean up previous render
+			nodes.forEach(n => n.remove());
+			nodes = [];
+
+			// Ensure we have an array
+			if (!Array.isArray(items)) return;
+
+			// Render each item
+			items.forEach((item, idx) => {
+				// Clone the template for this item
+				const clone = template.cloneNode(true);
+				
+				// Create a new scoped context with loop variables
+				// This adds "item" and "index" to the parent context
+				const scopedData = {
+					...context.data,
+					[itemName]: item, // e.g. item = "Apple"
+					[indexName]: idx // e.g. index = 0
+				};
+
+				const scopedContext = {
+					data: scopedData,
+					el: clone,
+					$el: clone
+				};
+
+				// Store scoped context for this cloned element
+				contexts.set(clone, scopedContext);
+				
+				// Process directives on the cloned element
+				processElement(clone);
+				
+				// Insert before the marker comment
+				parent.insertBefore(clone, marker);
+				
+				// Track for cleanup on next render
+				nodes.push(clone);
+			});
+		} catch (e) {
+			console.error('[x-for] Error:', e);
+		}
+	});
 };
 
 /**
