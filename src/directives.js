@@ -426,3 +426,27 @@ function evaluate(expr, context) {
         return null;
     }
 };
+
+/**
+ * getData
+ * -------
+ * Gets the reactive data for a given element.
+ * Allows programmatic updates from outside.
+ * 
+ * @param {HTMLElement} el - Element with x-data attribute
+ * @returns {Object|null} Reactive data proxy or null
+ */
+export function getData(el) {
+    if (!initialised) {
+        console.warn('[getData] Hamster.js not initialised yet. Call after DOMContentLoaded or init().');
+        return null;
+    }
+    
+    const context = contexts.get(el);
+    
+    if (!context) {
+        console.warn('[getData] No x-data found on element: ', el);
+    }
+    
+    return context ? context.data : null;
+};
