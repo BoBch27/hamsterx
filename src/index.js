@@ -22,8 +22,9 @@ const shouldAutoInit = typeof window !== 'undefined' && window.HamsterjsAutoInit
 if (typeof document !== 'undefined' && shouldAutoInit) {
     const autoInit = () => {
         if (document.body) {
-            console.log('🐹 Hamster.js auto-initialised');
             directives.init();
+            document.dispatchEvent(new CustomEvent('hamsterjs:ready'));
+            console.log('🐹 Hamster.js auto-initialised');
         }
     };
 
