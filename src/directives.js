@@ -38,6 +38,26 @@ export function init(root = document.body) {
 };
 
 /**
+ * initElement
+ * -----------
+ * Process directives on a specific element and its children.
+ * Use this for dynamically added content after initial page load.
+ * 
+ * Example:
+ * ```js
+ *   const div = document.createElement('div');
+ *   div.setAttribute('x-data', '{ count: 0 }');
+ *   document.body.appendChild(div);
+ *   Hamsterjs.initElement(div);
+ * 
+ * ```
+ * @param {HTMLElement} el - Element to process
+ */
+export function initElement(el) {
+  	processElement(el);
+};
+
+/**
  * processElement
  * --------------
  * Recursively processes an element and all its children.
