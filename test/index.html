@@ -4,16 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Document</title>
-    <!-- <script src="../dist/hamsterx.min.js"></script> -->
+    <script src="../dist/hamsterx.min.js" defer></script>
 </head>
-<body>
+<body style="background-color: black; color: white;">
     <div>This is a file to test hamsterx.</div>
     
-    <script type="module">
-        import { createSignal } from "../dist/hamsterx.esm.js"
-
-        const [count, setCount] = createSignal(0);
-        console.log(count());
-    </script>
+    <div x-data="{ count: 0 }">
+        <p x-text="count"></p>
+        <button x-on:click="count++">Increment</button>
+    </div>
 </body>
 </html>
