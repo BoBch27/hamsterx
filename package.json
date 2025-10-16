@@ -13,7 +13,9 @@
   ],
   "scripts": {
     "dev": "node build.config.js --watch",
-    "build": "node build.config.js"
+    "build": "node build.config.js",
+    "pack": "npm run build && npm pack --dry-run",
+    "publish": "npm run build && npm publish"
   },
   "homepage": "https://github.com/BoBch27/hamsterx#readme",
   "bugs": {
