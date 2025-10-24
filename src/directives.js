@@ -178,6 +178,18 @@ function initData(el) {
     const proxy = {};
 
     for (const [key, value] of Object.entries(data)) {
+        // Check if value is function
+        if (typeof value === 'function') {
+            // Store function as is binding to context
+            proxy[key] = value.bind(proxy);
+
+            // Store method metadata, not bound function
+            signals[key] = { type: 'function', fn: value };
+
+            // Skip signal creation for methods
+            continue;
+        }
+
         const [get, set] = createSignal(value);
 
         // Store signal for potential cleanup later
