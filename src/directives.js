@@ -177,8 +177,8 @@ function initData(el) {
     const signals = {};
     const proxy = {};
 
-    Object.keys(data).forEach(key => {
-        const [get, set] = createSignal(data[key]);
+    for (const [key, value] of Object.entries(data)) {
+        const [get, set] = createSignal(value);
 
         // Store signal for potential cleanup later
         signals[key] = { get, set };
@@ -190,7 +190,7 @@ function initData(el) {
             set(val) { set(val); },
             enumerable: true
         });
-    });
+    }
 
     // Create the context object that gets passed to all directives
     const context = {
