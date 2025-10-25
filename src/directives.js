@@ -101,6 +101,9 @@ function processElement(el) {
         case 'x-on':
             bindEvent(el, modifier, value, context);
             break;
+        case 'x-bind':
+            bindAttribute(el, modifier, value, context);
+            break;
         }
     });
 
@@ -407,6 +410,153 @@ function bindEvent(el, eventName, expr, context) {
 
     // Attach the event listener
     el.addEventListener(eventName, handler);
+};
+
+/**
+ * bindAttribute
+ * -------------
+ * Implements x-bind directive for reactive attribute binding.
+ * Supports special handling for class and style attributes.
+ * 
+ * Examples:
+ * - `<div x-bind:class="active ? 'bg-blue' : 'bg-gray'"></div>`
+ * - `<div x-bind:class="{ 'active': isActive, 'disabled': isDisabled }"></div>`
+ * - `<img x-bind:src="imageUrl" x-bind:alt="description">`
+ * - `<button x-bind:disabled="isLoading">Submit</button>`
+ * - `<div x-bind:style="{ color: textColor, fontSize: size + 'px' }"></div>`
+ * 
+ * @param {HTMLElement} el - Element to bind attribute to
+ * @param {string} attrName - Attribute name (e.g., "class", "src", "disabled")
+ * @param {string} expr - JavaScript expression to evaluate
+ * @param {Object} context - Reactive context
+ */
+function bindAttribute(el, attrName, expr, context) {
+    if (!context || !attrName) return;
+
+    // Special handling for 'class' attribute
+    if (attrName === 'class') {
+        bindClass(el, expr, context);
+        return;
+    }
+
+    // Special handling for 'style' attribute
+    if (attrName === 'style') {
+        bindStyle(el, expr, context);
+        return;
+    }
+
+    // General attribute binding
+    createEffect(() => {
+        try {
+            const value = evaluate(expr, context);
+            
+            // Handle boolean attributes (disabled, checked, readonly, etc.)
+            if (typeof value === 'boolean') {
+                if (value) {
+                    el.setAttribute(attrName, '');
+                } else {
+                    el.removeAttribute(attrName);
+                }
+            }
+            // Handle null/undefined - remove attribute
+            else if (value == null) {
+                el.removeAttribute(attrName);
+            }
+            // Normal attribute value
+            else {
+                el.setAttribute(attrName, value);
+            }
+        } catch (e) {
+            console.error(`🐹 [x-bind:${attrName}] Error: `, e);
+        }
+    });
+};
+
+/**
+ * bindClass
+ * ---------
+ * Special handler for class attribute binding.
+ * Supports object syntax for conditional classes.
+ * 
+ * Example: `x-bind:class="{ 'active': isActive, 'disabled': !isEnabled }"`
+ * 
+ * For simple string classes, just use the class attribute normally.
+ * For ternaries, use the expression directly: `x-bind:class="active ? 'bg-blue' : 'bg-gray'"`
+ * 
+ * @param {HTMLElement} el - Element to bind classes to
+ * @param {string} expr - JavaScript expression
+ * @param {Object} context - Reactive context
+ */
+function bindClass(el, expr, context) {
+    // Store original classes from HTML
+    const originalClasses = el.className.split(' ').filter(c => c);
+    
+    createEffect(() => {
+        try {
+            const value = evaluate(expr, context);
+            
+            // Start with original classes
+            const classes = new Set(originalClasses);
+            
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                // Object: { 'active': isActive, 'disabled': isDisabled }
+                for (const [cls, condition] of Object.entries(value)) {
+                    if (condition) {
+                        classes.add(cls);
+                    }
+                }
+            } else if (typeof value === 'string') {
+                // String (from ternary or direct expression): "bg-blue text-white"
+                value.split(' ').filter(c => c).forEach(c => classes.add(c));
+            }
+            
+            // Apply the final class list
+            el.className = Array.from(classes).join(' ');
+        } catch (e) {
+            console.error('🐹 [x-bind:class] Error: ', e);
+        }
+    });
+};
+
+/**
+ * bindStyle
+ * ---------
+ * Special handler for style attribute binding.
+ * Supports object syntax: `x-bind:style="{ color: textColor, fontSize: size + 'px' }"`
+ * 
+ * @param {HTMLElement} el - Element to bind styles to
+ * @param {string} expr - JavaScript expression (should evaluate to object)
+ * @param {Object} context - Reactive context
+ */
+function bindStyle(el, expr, context) {
+    // Store original inline styles
+    const originalStyle = el.getAttribute('style') || '';
+    
+    createEffect(() => {
+        try {
+            const value = evaluate(expr, context);
+            
+            // Restore original styles first
+            el.setAttribute('style', originalStyle);
+            
+            if (typeof value === 'string') {
+                // String: "color: red; font-size: 14px"
+                el.style.cssText = originalStyle + '; ' + value;
+            }
+            else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                // Object: { color: 'red', fontSize: '14px' }
+                for (const [prop, val] of Object.entries(value)) {
+                    if (val != null) {
+                        // Convert camelCase to kebab-case (fontSize -> font-size)
+                        const cssProp = prop.replace(/([A-Z])/g, '-$1').toLowerCase();
+                        el.style.setProperty(cssProp, String(val));
+                    }
+                };
+            }
+        } catch (e) {
+            console.error('🐹 [x-bind:style] Error: ', e);
+        }
+    });
 };
 
 /**
