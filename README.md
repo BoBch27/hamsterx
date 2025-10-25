@@ -101,6 +101,28 @@ Defines reactive data for a component. Think of it as the hamster's data pellets
 </div>
 ```
 
+#### Methods in x-data
+
+You can define methods that access your reactive data using `this`:
+
+```html
+<div x-data="{ 
+  count: 0,
+  increment() {
+    this.count++
+  },
+  reset() {
+    this.count = 0
+  }
+}">
+  <button x-on:click="increment()">Add food to pouches</button>
+  <button x-on:click="reset()">Empty the pouches</button>
+  <span x-text="count"></span>
+</div>
+```
+
+Methods have full access to all reactive data through `this` and can be called from any directive.
+
 ### `x-text`
 
 Reactively updates text content. Like a hamster's name tag that magically changes.
@@ -115,6 +137,38 @@ Toggles visibility based on a condition. Your hamster appears and disappears (it
 
 ```html
 <div x-show="isVisible">🐹 Peek-a-boo!</div>
+```
+
+### `x-bind:[attribute]`
+
+Reactively binds attributes. Your hamster's outfit changes with its mood.
+
+```html
+<!-- Boolean attributes (hamsters can be disabled too) -->
+<button x-bind:disabled="isLoading">Submit</button>
+<input x-bind:readonly="!isEditing">
+
+<!-- Dynamic attributes (hamster images are important) -->
+<img x-bind:src="hamsterPhotoUrl" x-bind:alt="hamsterName">
+<a x-bind:href="hamsterBlogUrl">Read more about hamsters</a>
+
+<!-- Conditional classes (object syntax - the hamster's favorite) -->
+<div x-bind:class="{ 'active': isActive, 'sleepy': !isAwake }">
+  Hamster status indicator
+</div>
+
+<!-- Dynamic styles (because hamsters appreciate good design) -->
+<div x-bind:style="{ color: furColor, fontSize: size + 'px' }">
+  Color-coordinated hamster
+</div>
+```
+
+**Class binding** supports object syntax for conditional classes. Your original HTML classes are preserved (hamsters don't forget their roots):
+
+```html
+<div class="hamster-card cozy" x-bind:class="{ 'running': isActive, 'napping': isLoading }">
+  Base classes stay, dynamic classes toggle like a hamster wheel
+</div>
 ```
 
 ### `x-on:[event]`
@@ -178,12 +232,29 @@ hamsterx.initElement(div);
 
 ## 💻 Programmatic Access
 
-Need to update data from outside? Use `getData()`:
+Need to update data from outside (like reaching into the hamster cage)? Use `getData()`:
 
 ```javascript
 const el = document.querySelector('[x-data]');
 const data = hamsterx.getData(el);
-data.count = 42; // Reactively updates!
+data.count = 42; // Reactively updates! The hamster notices immediately.
+```
+
+**Use cases:**
+- Integration with third-party libraries (teaching old hamsters new tricks)
+- External form handling (hamster data entry)
+- Unit testing (making sure your hamster behaves)
+- Console debugging (`console.log(hamsterx.getData(el))` - peek at the hamster)
+
+**Example - Plotly chart integration:**
+
+```javascript
+const chart = document.getElementById('hamster-activity-chart');
+chart.on('plotly_click', (data) => {
+  const hamsterData = hamsterx.getData(document.getElementById('stats'));
+  hamsterData.selectedDay = data.points[0].x;
+  hamsterData.wheelRotations = data.points[0].y;
+});
 ```
 
 ## 🌐 Browser Support
@@ -219,9 +290,12 @@ Found a bug? Want to add features? Your hamster wheel contributions are welcome!
 
 ## 🗺️ Roadmap
 
-- [ ] `x-model` directive (two-way binding)
+- [x] Methods in `x-data`
+- [x] `x-bind` directive (attribute binding)
 - [ ] Event modifiers (`.prevent`, `.stop`, `.once`)
 - [ ] Transition support
+- [ ] `x-init` directive (hook into element initialisation)
+- [ ] Benchmarks
 - [ ] Even more hamster emojis
 
 ## 💭 Philosophy
