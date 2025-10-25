@@ -1,6 +1,6 @@
 {
   "name": "hamsterx",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A tiny, Alpine-like reactive runtime that uses vanilla JS signals and squeaks fast 🐹",
   "type": "module",
   "main": "dist/hamsterx.esm.js",
