@@ -1,6 +1,14 @@
 import * as signals from "./signal.js";
 import * as directives from "./directives.js";
 
+// hamsterx is browser-only
+if (typeof window === 'undefined') {
+    throw new Error(
+        '🐹 hamsterx requires a browser environment. Your hamster needs a wheel to run on! ' +
+        'If using SSR (Next.js, Nuxt, etc), make sure hamsterx only runs on the client.'
+    );
+}
+
 const api = { ...signals, ...directives };
 
 // expose globally, so users can use functions in inline scripts (e.g. createSignal, etc.)
@@ -14,12 +22,8 @@ export default api;
 export * from "./signal.js";
 export * from "./directives.js";
 
-// Check if auto-init should be disabled
-// User can set window.hamsterxAutoInit = false before script loads
-const shouldAutoInit = typeof window !== 'undefined' && window.hamsterxAutoInit !== false;
-
-// Auto-init directives when DOM ready (only for browser global usage)
-if (typeof document !== 'undefined' && shouldAutoInit) {
+// Auto-init (can be disabled with window.hamsterxAutoInit = false)
+if (window.hamsterxAutoInit !== false) {
     const autoInit = () => {
         if (document.body) {
             directives.init();
