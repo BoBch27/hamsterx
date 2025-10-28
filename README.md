@@ -8,7 +8,7 @@ hamsterx takes Alpine's delightful HTML-first syntax and marries it with Solid's
 
 ## Why hamsterx?
 
-✅ **Tiny**: Small enough to fit in a hamster's cheek pouch. It's just ~2KB gzipped (~4KB minified).  
+✅ **Tiny**: Small enough to fit in a hamster's cheek pouch. It's just ~2.5KB gzipped (~6KB minified).  
 ✅ **Fast**: Signal-based reactivity means surgical DOM updates, not sledgehammer re-renders.  
 ✅ **Familiar**: If you know Alpine.js, you already know hamsterx.  
 ✅ **No Build Step**: Drop it in via CDN and start coding. Your hamster doesn't have time for webpack configs.
@@ -106,16 +106,18 @@ Defines reactive data for a component. Think of it as the hamster's data pellets
 You can define methods that access your reactive data using `this`:
 
 ```html
-<div x-data="{ 
-  count: 0,
-  increment() {
-    this.count++
-  },
-  reset() {
-    this.count = 0
-  }
-}">
-  <button x-on:click="increment()">Add food to pouches</button>
+<div 
+  x-data="{ 
+    count: 0,
+    increment() {
+      this.count++
+    },
+    reset() {
+      this.count = 0
+    }
+  }"
+>
+  <button x-on:click="increment()">Add seeds to pouches</button>
   <button x-on:click="reset()">Empty the pouches</button>
   <span x-text="count"></span>
 </div>
@@ -201,6 +203,205 @@ Loops through arrays. Like multiple hamsters running on multiple wheels.
 </template>
 ```
 
+## 🎨 Transitions
+
+Make your hamster's entrances and exits graceful! hamsterx supports smooth transitions using `x-transition-enter` and `x-transition-leave` with `x-show`.
+
+### How It Works
+
+When you toggle visibility with `x-show`, hamsterx can apply CSS classes for smooth animations:
+
+```html
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  .fade-in { animation: fadeIn 300ms ease-out; }
+  .fade-out { animation: fadeOut 300ms ease-in; }
+</style>
+
+<div x-data="{ visible: false }">
+  <button x-on:click="visible = !visible">
+    Toggle Hamster Visibility 🐹
+  </button>
+  
+  <div 
+    x-show="visible"
+    x-transition-enter="fade-in"
+    x-transition-leave="fade-out"
+  >
+    🐹 The hamster appears gracefully and exits with dignity!
+  </div>
+</div>
+```
+
+### With CSS Transitions
+
+You can also use CSS transitions instead of animations:
+
+```html
+<style>
+  .opacity-enter { 
+    opacity: 1; 
+    transition: opacity 300ms; 
+  }
+  .opacity-leave { 
+    opacity: 0; 
+    transition: opacity 300ms; 
+  }
+</style>
+
+<div 
+  x-show="open"
+  x-transition-enter="opacity-enter"
+  x-transition-leave="opacity-leave"
+>
+  Smoothly fading hamster content
+</div>
+```
+
+### Works With Popular CSS Libraries
+
+hamsterx transitions work perfectly with Tailwind, Animate.css, or any CSS framework:
+
+```html
+<!-- Tailwind classes -->
+<div 
+  x-show="open"
+  x-transition-enter="transition ease-out duration-300 opacity-100 scale-100"
+  x-transition-leave="transition ease-in duration-200 opacity-0 scale-95"
+>
+  Tailwind-powered hamster
+</div>
+```
+
+### Preventing Flash of Content
+
+To prevent elements from briefly appearing before hamsterx loads, use inline styling: `style="display: none;"`:
+
+```html
+<div style="display: none;" x-show="open" x-transition-enter="fade-in">
+  <!-- Hidden until hamsterx initialises, no flash! -->
+  🐹 No premature hamster sightings
+</div>
+```
+
+hamsterx automatically removes the `display: none` attribute during initialisation, then `x-show` takes over.
+
+**Note:** Transitions work seamlessly with flexbox, grid, and any display type. hamsterx remembers your element's original display value! 🎯
+
+## 💡 Real-World Examples
+
+### Dropdown Menu (Every hamster needs options)
+
+```html
+<style>
+  @keyframes slideDown {
+    from { 
+      opacity: 0; 
+      transform: translateY(-10px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+  @keyframes slideUp {
+    from { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+    to { 
+      opacity: 0; 
+      transform: translateY(-10px); 
+    }
+  }
+  .slide-down { animation: slideDown 200ms ease-out; }
+  .slide-up { animation: slideUp 150ms ease-in; }
+  .dropdown { display: flex; flex-direction: column; }
+</style>
+
+<div x-data="{ open: false }">
+  <button x-on:click="open = !open">
+    🐹 Hamster Menu
+  </button>
+  
+  <div 
+    x-show="open"
+    x-transition-enter="slide-down"
+    x-transition-leave="slide-up"
+    class="dropdown"
+    style="display: none;"
+  >
+    <a href="#">Feed hamster</a>
+    <a href="#">Pet hamster</a>
+    <a href="#">Give hamster a wheel</a>
+  </div>
+</div>
+```
+
+### Form Validation (Even hamsters validate their input)
+
+```html
+<div 
+  x-data="{ 
+    email: '',
+    isValid() {
+      return this.email.includes('@') && this.email.includes('hamster')
+    }
+  }"
+>
+  <input 
+    x-bind:value="email"
+    x-on:input="email = $event.target.value"
+    x-bind:class="{ 'border-red-500': email && !isValid() }"
+    class="border"
+    placeholder="hamster@wheel.com"
+  />
+  
+  <span x-show="email && !isValid()">Hamsters need valid emails!</span>
+</div>
+```
+
+### Tab Navigation (Hamsters exploring different tunnels)
+
+```html
+<div 
+  x-data="{ 
+    activeTab: 'home',
+    setTab(tab) { this.activeTab = tab }
+  }"
+>
+  <button 
+    x-on:click="setTab('home')"
+    x-bind:class="{ 'bg-hamster-blue': activeTab === 'home' }"
+  >
+    🏠 Home Cage
+  </button>
+  <button 
+    x-on:click="setTab('wheel')"
+    x-bind:class="{ 'bg-hamster-blue': activeTab === 'wheel' }"
+  >
+    ⚙️ Exercise Wheel
+  </button>
+  <button 
+    x-on:click="setTab('food')"
+    x-bind:class="{ 'bg-hamster-blue': activeTab === 'food' }"
+  >
+    🥜 Food Stash
+  </button>
+  
+  <div x-show="activeTab === 'home'" x-text="'Welcome to the hamster home!'"></div>
+  <div x-show="activeTab === 'wheel'" x-text="'Time to run in circles!'"></div>
+  <div x-show="activeTab === 'food'" x-text="'Cheeks full of seeds 🌻'"></div>
+</div>
+```
+
 ## ⚡ Working with Signals (For the nerds)
 
 Under the hood, hamsterx uses signals - a reactive primitive that's simpler than your hamster's exercise routine.
@@ -265,7 +466,7 @@ Works in all modern browsers (anything that understands `WeakMap`, `Proxy`, and 
 
 | Framework | Size (min + gzip) |
 |-----------|-------------------|
-| hamsterx | ~2KB 🐹 |
+| hamsterx | ~2.5KB 🐹 |
 | Alpine.js | ~15KB 🏔️ |
 | Vue.js | ~40KB 🗻 |
 | React | ~45KB 🏔️🏔️ |
@@ -292,8 +493,8 @@ Found a bug? Want to add features? Your hamster wheel contributions are welcome!
 
 - [x] Methods in `x-data`
 - [x] `x-bind` directive (attribute binding)
+- [x] Transition support
 - [ ] Event modifiers (`.prevent`, `.stop`, `.once`)
-- [ ] Transition support
 - [ ] `x-init` directive (hook into element initialisation)
 - [ ] Benchmarks
 - [ ] Even more hamster emojis
