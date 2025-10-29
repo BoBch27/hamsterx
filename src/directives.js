@@ -107,6 +107,11 @@ function processElement(el) {
         }
     });
 
+    // Process x-init last (when element has initialised)
+    if (el.hasAttribute('x-init')) {
+        bindInit(el.getAttribute('x-init'), context);
+    }
+
     // Process children recursively (unless x-for handled it)
     if (!el.hasAttribute('x-for')) {
    		Array.from(el.children).forEach(child => processElement(child));
@@ -602,6 +607,26 @@ function bindStyle(el, expr, context) {
         } catch (e) {
             console.error('🐹 [x-bind:style] Error: ', e);
         }
+    });
+};
+
+/**
+ * bindInit
+ * --------
+ * Implements x-init directive for initialisation code.
+ * Runs once when the element is first processed.
+ * Supports await for async operations.
+ * 
+ * Example: `<div x-init="data = await (await fetch('/api')).json()">`
+ * 
+ * @param {string} stmt - JavaScript statement to execute
+ * @param {Object} context - Reactive context
+ */
+function bindInit(stmt, context) {
+    if (!context) return;
+
+    executeStatement(stmt, context).catch(err => {
+        console.error('🐹 [x-init] Error: ', err);
     });
 };
 
