@@ -238,7 +238,7 @@ function bindText(el, expr, context) {
     createEffect(() => {
         try {
             // Evaluate the expression (e.g., "count" or "firstName + ' ' + lastName")
-            const value = evaluate(expr, context);
+            const value = evaluateExpression(expr, context);
 
             // Update the text content (converts undefined/null to empty string)
             el.textContent = value ?? '';
@@ -279,7 +279,7 @@ function bindShow(el, expr, context) {
     createEffect(() => {
         try {
             // Evaluate expression as boolean
-            const show = evaluate(expr, context);
+            const show = evaluateExpression(expr, context);
 
             // Showing
             if (show) {
@@ -380,7 +380,7 @@ function bindFor(el, expr, context) {
 	createEffect(() => {
 		try {
 			// Evaluate the array expression
-			const items = evaluate(itemsExpr, context);
+			const items = evaluateExpression(itemsExpr, context);
 			
 			// Clean up previous render
 			nodes.forEach(n => n.remove());
@@ -502,7 +502,7 @@ function bindAttribute(el, attrName, expr, context) {
     // General attribute binding
     createEffect(() => {
         try {
-            const value = evaluate(expr, context);
+            const value = evaluateExpression(expr, context);
             
             // Handle boolean attributes (disabled, checked, readonly, etc.)
             if (typeof value === 'boolean') {
@@ -547,7 +547,7 @@ function bindClass(el, expr, context) {
     
     createEffect(() => {
         try {
-            const value = evaluate(expr, context);
+            const value = evaluateExpression(expr, context);
             
             // Start with original classes
             const classes = new Set(originalClasses);
@@ -588,7 +588,7 @@ function bindStyle(el, expr, context) {
     
     createEffect(() => {
         try {
-            const value = evaluate(expr, context);
+            const value = evaluateExpression(expr, context);
             
             // Restore original styles first
             el.setAttribute('style', originalStyle);
@@ -614,18 +614,18 @@ function bindStyle(el, expr, context) {
 };
 
 /**
- * evaluate
+ * evaluateExpression
  * --------
  * Evaluates a JavaScript expression in the context of reactive data.
  * Expression has access to all data properties directly (via 'with' statement).
  * 
- * Example: `evaluate("count + 1", context)` where count is in context.data
+ * Example: `evaluateExpression("count + 1", context)` where count is in context.data
  * 
  * @param {string} expr - JavaScript expression
  * @param {Object} context - Reactive context
  * @returns {*} Result of expression evaluation
  */
-function evaluate(expr, context) {
+function evaluateExpression(expr, context) {
     try {
         // Create a function that evaluates the expression
         // The 'with' statement allows: "count" instead of "$data.count"
