@@ -431,35 +431,27 @@ function bindFor(el, expr, context) {
  * ---------
  * Implements x-on directive for event handling.
  * Attaches event listeners that can access reactive data.
+ * Supports await for async event handlers.
  * 
  * Example: `<button x-on:click="count++">Increment</button>`
+ * Example: `<form x-on:submit="await handleSubmit($event)">Submit</form>`
  * 
  * @param {HTMLElement} el - Element to attach listener to
  * @param {string} eventName - Event name (e.g., "click", "input")
- * @param {string} expr - JavaScript code to execute
+ * @param {string} stmt - JavaScript statement to execute
  * @param {Object} context - Reactive context
  */
-function bindEvent(el, eventName, expr, context) {
+function bindEvent(el, eventName, stmt, context) {
     if (!context || !eventName) return;
 
-    // Create event handler function
+    // Create event handler function with access to:
+    // - $event: the native event object
+    // - $el: the element itself
+    // - $data: the reactive data (via 'with' statement)
     const handler = (e) => {
-        try {
-            // Create a function with access to:
-            // - $event: the native event object
-            // - $el: the element itself
-            // - $data: the reactive data (via 'with' statement)
-            const fn = new Function('$event', '$el', '$data', `
-                with($data) {
-                    ${expr}
-                }
-            `);
-        
-            // Execute the handler with proper context
-            fn.call(context.data, e, el, context.data);
-        } catch (err) {
+        executeStatement(stmt, context, e).catch(err => {
             console.error(`🐹 [x-on:${eventName}] Error: `, err);
-        }
+        });
     };
 
     // Attach the event listener
@@ -640,6 +632,37 @@ function evaluateExpression(expr, context) {
     } catch (e) {
         console.error('🐹 [evaluate] Error: ', expr, e);
         return null;
+    }
+};
+
+/**
+ * executeStatement
+ * ----------------
+ * Executes a JavaScript statement in the context of reactive data.
+ * Supports both sync and async code (await).
+ * 
+ * @param {string} code - JavaScript statement
+ * @param {Object} context - Reactive context
+ * @param {Event} [event] - Optional event object (for x-on)
+ * @returns {Promise} Promise that resolves when execution completes
+ */
+function executeStatement(code, context, event = null) {
+    try {
+        // Create an async function to support await
+        // Include $event for x-on compatibility
+        const fn = new Function('$event', '$el', '$data', `
+            return (async () => {
+                with($data) {
+                    ${code}
+                }
+            })();
+        `);
+        
+        // Execute and return promise for error handling
+        return fn.call(context.data, event, context.el, context.data);
+    } catch (err) {
+        console.error('🐹 [executeStatement] Error: ', err);
+        return Promise.reject(err);
     }
 };
 
