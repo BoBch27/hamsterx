@@ -8,7 +8,7 @@ hamsterx takes Alpine's delightful HTML-first syntax and marries it with Solid's
 
 ## Why hamsterx?
 
-✅ **Tiny**: Small enough to fit in a hamster's cheek pouch. It's just ~2.5KB gzipped (~6KB minified).  
+✅ **Tiny**: Small enough to fit in a hamster's cheek pouch. It's just ~2.5KB gzipped (~7KB minified).  
 ✅ **Fast**: Signal-based reactivity means surgical DOM updates, not sledgehammer re-renders.  
 ✅ **Familiar**: If you know Alpine.js, you already know hamsterx.  
 ✅ **No Build Step**: Drop it in via CDN and start coding. Your hamster doesn't have time for webpack configs.
@@ -175,17 +175,38 @@ Reactively binds attributes. Your hamster's outfit changes with its mood.
 
 ### `x-on:[event]`
 
-Listens to events. Your hamster responds to pokes (gentle ones, we hope).
+Listens to events. Your hamster responds to pokes (gentle ones, we hope). With async support for hamsters who need to wait for things!
 
 ```html
 <button x-on:click="count++">Click me</button>
 <input x-on:input="search = $event.target.value">
+
+<!-- Async event handlers - because sometimes hamsters need to fetch snacks -->
+<button x-on:click="await saveData(); showSuccess = true">
+  Save to hamster database
+</button>
+
+<form 
+  x-on:submit="
+    $event.preventDefault();
+    const result = await fetch('/api/hamster-signup', { 
+      method: 'POST', 
+      body: JSON.stringify($data) 
+    });
+    registered = await result.json();
+  "
+>
+  <input x-bind:value="email" x-on:input="email = $event.target.value">
+  <button type="submit">Join the hamster club</button>
+</form>
 ```
 
 Special variables:
 - `$event` - The native event object
 - `$el` - The element itself
 - `$data` - All your reactive data
+
+**Pro tip:** Event handlers fully support `await` for async operations. Your hamster can now fetch data, call APIs, and wait for promises without breaking a sweat (or whisker).
 
 ### `x-for`
 
@@ -202,6 +223,57 @@ Loops through arrays. Like multiple hamsters running on multiple wheels.
   <li x-text="`${index}: ${item}`"></li>
 </template>
 ```
+
+### `x-init`
+
+Runs initialisation code when your component first loads. Perfect for fetching data, setting up timers, or waking your hamster up in the morning. Fully supports `await` for async operations!
+
+```html
+<!-- Simple initialisation -->
+<div x-data="{ greeting: '' }" x-init="greeting = 'Hello from hamster HQ! 🐹'">
+  <p x-text="greeting"></p>
+</div>
+
+<!-- Fetch data on mount - hamsters love fresh data -->
+<div 
+  x-data="{ hamsters: [], loading: true }"
+  x-init="
+    hamsters = await (await fetch('/api/hamsters')).json();
+    loading = false;
+  "
+>
+  <div x-show="loading">Loading hamster profiles...</div>
+  <ul x-show="!loading">
+    <template x-for="hamster in hamsters">
+      <li x-text="hamster.name"></li>
+    </template>
+  </ul>
+</div>
+
+<!-- Multiple async operations - because hamsters multitask -->
+<div 
+  x-data="{ user: null, settings: null, ready: false }"
+  x-init="
+    user = await (await fetch('/api/user')).json();
+    settings = await (await fetch('/api/settings')).json();
+    ready = true;
+    console.log('🐹 Hamster profile loaded!');
+  "
+>
+  <div x-show="ready">
+    <h1 x-text="user.name"></h1>
+    <p x-text="`Favorite food: ${settings.favoriteSnack}`"></p>
+  </div>
+</div>
+```
+
+**Key points:**
+- Runs **once** when the element is initialised (not reactive)
+- Runs **after** all other directives are set up (so your bindings are ready)
+- Fully supports `await` for fetching data or other async operations
+- Access to `$el` and all reactive data via `$data`
+
+**Pro tip:** Use `x-init` for data fetching, third-party library initialisation, or any setup logic your hamster needs before getting to work!
 
 ## 🎨 Transitions
 
@@ -368,6 +440,52 @@ hamsterx automatically removes the `display: none` attribute during initialisati
 </div>
 ```
 
+### Async Form Submission (Hamsters wait for the server)
+
+```html
+<div 
+  x-data="{ 
+    name: '',
+    email: '',
+    submitting: false,
+    success: false,
+    async submit(e) {
+      e.preventDefault();
+      this.submitting = true;
+      const response = await fetch('/api/hamster-signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: this.name, email: this.email })
+      });
+      this.success = response.ok;
+      this.submitting = false;
+    }
+  }"
+>
+  <form x-on:submit="await submit($event)">
+    <input 
+      x-bind:value="name"
+      x-on:input="name = $event.target.value"
+      placeholder="Hamster name"
+    />
+    <input 
+      x-bind:value="email"
+      x-on:input="email = $event.target.value"
+      placeholder="hamster@wheel.com"
+    />
+    <button 
+      type="submit"
+      x-bind:disabled="submitting"
+    >
+      <span x-show="!submitting">Join the colony 🐹</span>
+      <span x-show="submitting">Scurrying to server...</span>
+    </button>
+  </form>
+  
+  <div x-show="success">Welcome to the hamster family!</div>
+</div>
+```
+
 ### Tab Navigation (Hamsters exploring different tunnels)
 
 ```html
@@ -399,6 +517,40 @@ hamsterx automatically removes the `display: none` attribute during initialisati
   <div x-show="activeTab === 'home'" x-text="'Welcome to the hamster home!'"></div>
   <div x-show="activeTab === 'wheel'" x-text="'Time to run in circles!'"></div>
   <div x-show="activeTab === 'food'" x-text="'Cheeks full of seeds 🌻'"></div>
+</div>
+```
+
+### Data Fetching on Init (Hamsters love fresh data)
+
+```html
+<div 
+  x-data="{ 
+    posts: [],
+    loading: true,
+    error: null
+  }"
+  x-init="
+    try {
+      const response = await fetch('/api/hamster_news?limit=5');
+      posts = await response.json();
+    } catch (e) {
+      error = 'Failed to fetch hamster news 😢';
+    } finally {
+      loading = false;
+    }
+  "
+>
+  <div x-show="loading">🐹 Hamster is fetching data...</div>
+  <div x-show="error" x-text="error"></div>
+  
+  <ul x-show="!loading && !error">
+    <template x-for="post in posts">
+      <li>
+        <h3 x-text="post.title"></h3>
+        <p x-text="post.body"></p>
+      </li>
+    </template>
+  </ul>
 </div>
 ```
 
@@ -494,8 +646,9 @@ Found a bug? Want to add features? Your hamster wheel contributions are welcome!
 - [x] Methods in `x-data`
 - [x] `x-bind` directive (attribute binding)
 - [x] Transition support
+- [x] `x-init` directive (hook into element initialisation)
+- [x] Async/await support in `x-on` and `x-init`
 - [ ] Event modifiers (`.prevent`, `.stop`, `.once`)
-- [ ] `x-init` directive (hook into element initialisation)
 - [ ] Benchmarks
 - [ ] Even more hamster emojis
 
