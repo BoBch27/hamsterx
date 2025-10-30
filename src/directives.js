@@ -368,9 +368,15 @@ function bindFor(el, expr, context) {
 	const indexName = match[2] || 'index'; // e.g. "index" or "i"
 	const itemsExpr = match[4]; // e.g. "items" or "todos"
 
-	// Clone the template and remove x-for to prevent infinite loop
-	const template = el.cloneNode(true);
-	template.removeAttribute('x-for');
+    // Get the template content
+    const isTemplate = el.tagName === 'TEMPLATE';
+    const templateContent = isTemplate ? el.content : el;
+
+	// Clone the template and remove x-for to prevent infinite loop (if not template tag)
+	const template = templateContent.cloneNode(true);
+    if (!isTemplate) {
+        template.removeAttribute('x-for');
+    }
 	
 	// Replace original element with a comment marker
 	// This marker keeps track of where to insert rendered items
@@ -398,32 +404,39 @@ function bindFor(el, expr, context) {
 			items.forEach((item, idx) => {
 				// Clone the template for this item
 				const clone = template.cloneNode(true);
-				
-				// Create a new scoped context with loop variables
-				// This adds "item" and "index" to the parent context
-				const scopedData = {
-					...context.data,
-					[itemName]: item, // e.g. item = "Apple"
-					[indexName]: idx // e.g. index = 0
-				};
 
-				const scopedContext = {
-					data: scopedData,
-					el: clone,
-					$el: clone
-				};
+                // Get actual elements to process
+                const elements = isTemplate 
+                    ? Array.from(clone.children) 
+                    : [clone];
 
-				// Store scoped context for this cloned element
-				contexts.set(clone, scopedContext);
-				
-				// Process directives on the cloned element
-				processElement(clone);
-				
-				// Insert before the marker comment
-				parent.insertBefore(clone, marker);
-				
-				// Track for cleanup on next render
-				nodes.push(clone);
+                elements.forEach(element => {
+                    // Create a new scoped context with loop variables
+                    // This adds "item" and "index" to the parent context
+                    const scopedData = {
+                        ...context.data,
+                        [itemName]: item, // e.g. item = "Apple"
+                        [indexName]: idx // e.g. index = 0
+                    };
+
+                    const scopedContext = {
+                        data: scopedData,
+                        el: element,
+                        $el: element
+                    };
+
+                    // Store scoped context for this cloned element
+                    contexts.set(element, scopedContext);
+                    
+                    // Process directives on the cloned element
+                    processElement(element);
+                    
+                    // Insert before the marker comment
+                    parent.insertBefore(element, marker);
+                    
+                    // Track for cleanup on next render
+                    nodes.push(element);
+                });
 			});
 		} catch (e) {
 			console.error('🐹 [x-for] Error: ', e);
