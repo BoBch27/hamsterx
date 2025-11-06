@@ -668,7 +668,7 @@ function evaluateExpression(expr, context) {
         // Execute and return result
         return fn(context.data, context.el);
     } catch (e) {
-        console.error('🐹 [evaluate] Error: ', expr, e);
+        console.error('🐹 [evaluateExpression] Error: ', expr, e);
         return null;
     }
 };
