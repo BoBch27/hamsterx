@@ -39,6 +39,11 @@ const contexts = new WeakMap();
  * @param {HTMLElement} el - Element to start scanning from (default: `document.body`)
  */
 export function init(el = document.body) {
+    if (el == null) {
+        console.warn('🐹 [init] Called on a null/undefined element.');
+        return;
+    }
+
   	processElement(el);
 };
 
@@ -720,6 +725,11 @@ function executeStatement(code, context, event = null) {
  * @returns {Object|null} Reactive data proxy or null
  */
 export function getData(el) {
+    if (el == null) {
+        console.warn('🐹 [getData] Called on a null/undefined element.');
+        return null;
+    }
+
     const context = contexts.get(el);
     
     if (!context) {
@@ -749,6 +759,11 @@ export function getData(el) {
  * @param {HTMLElement} el - Element to cleanup
  */
 export function cleanup(el) {
+    if (el == null) {
+        console.warn('🐹 [cleanup] Called on a null/undefined element.');
+        return;
+    }
+
     const context = contexts.get(el);
     if (!context) return;
     
