@@ -217,7 +217,8 @@ function initData(el) {
         data: proxy, // Reactive data proxy
         signals, // Raw signals (for advanced use)
         el, // The element itself
-        $el: el // Alpine.js compatible alias
+        $el: el, // Alpine.js compatible alias
+        cleanup: [], // Cleanup functions
     };
 
     // Store context in WeakMap for this element
@@ -240,7 +241,7 @@ function bindText(el, expr, context) {
     if (!context) return;
   
      // Create an effect that automatically re-runs when signals change
-    createEffect(() => {
+    const dispose = createEffect(() => {
         try {
             // Evaluate the expression (e.g., "count" or "firstName + ' ' + lastName")
             const value = evaluateExpression(expr, context);
@@ -251,6 +252,9 @@ function bindText(el, expr, context) {
             console.error('🐹 [x-text] Error: ', e);
         }
     });
+
+    // Track effect disposal
+    context.cleanup.push(dispose);
 };
 
 /**
@@ -281,7 +285,7 @@ function bindShow(el, expr, context) {
     const enterClass = el.getAttribute('x-transition-enter')?.split(' ').filter(c => c);
     const leaveClass = el.getAttribute('x-transition-leave')?.split(' ').filter(c => c);
 
-    createEffect(() => {
+    const dispose = createEffect(() => {
         try {
             // Evaluate expression as boolean
             const show = evaluateExpression(expr, context);
@@ -336,6 +340,9 @@ function bindShow(el, expr, context) {
             console.error('🐹 [x-show] Error: ', e);
         }
     });
+
+    // Track effect disposal
+    context.cleanup.push(dispose);
 };
 
 /**
@@ -388,13 +395,16 @@ function bindFor(el, expr, context) {
 	let nodes = [];
 
 	// Create effect that re-renders whenever array changes
-	createEffect(() => {
+	const dispose = createEffect(() => {
 		try {
 			// Evaluate the array expression
 			const items = evaluateExpression(itemsExpr, context);
 			
 			// Clean up previous render
-			nodes.forEach(n => n.remove());
+			nodes.forEach(n => {
+                cleanup(n);
+                n.remove();
+            });
 			nodes = [];
 
 			// Ensure we have an array
@@ -442,6 +452,9 @@ function bindFor(el, expr, context) {
 			console.error('🐹 [x-for] Error: ', e);
 		}
 	});
+
+    // Track effect disposal
+    context.cleanup.push(dispose);
 };
 
 /**
@@ -474,6 +487,11 @@ function bindEvent(el, eventName, stmt, context) {
 
     // Attach the event listener
     el.addEventListener(eventName, handler);
+
+    // Add cleanup to context
+    context.cleanup.push(() => {
+        el.removeEventListener(eventName, handler);
+    });
 };
 
 /**
@@ -510,7 +528,7 @@ function bindAttribute(el, attrName, expr, context) {
     }
 
     // General attribute binding
-    createEffect(() => {
+    const dispose = createEffect(() => {
         try {
             const value = evaluateExpression(expr, context);
             
@@ -534,6 +552,9 @@ function bindAttribute(el, attrName, expr, context) {
             console.error(`🐹 [x-bind:${attrName}] Error: `, e);
         }
     });
+
+    // Track effect disposal
+    context.cleanup.push(dispose);
 };
 
 /**
@@ -555,7 +576,7 @@ function bindClass(el, expr, context) {
     // Store original classes from HTML
     const originalClasses = el.className.split(' ').filter(c => c);
     
-    createEffect(() => {
+    const dispose = createEffect(() => {
         try {
             const value = evaluateExpression(expr, context);
             
@@ -580,6 +601,9 @@ function bindClass(el, expr, context) {
             console.error('🐹 [x-bind:class] Error: ', e);
         }
     });
+
+    // Track effect disposal
+    context.cleanup.push(dispose);
 };
 
 /**
@@ -596,7 +620,7 @@ function bindStyle(el, expr, context) {
     // Store original inline styles
     const originalStyle = el.getAttribute('style') || '';
     
-    createEffect(() => {
+    const dispose = createEffect(() => {
         try {
             const value = evaluateExpression(expr, context);
             
@@ -621,6 +645,9 @@ function bindStyle(el, expr, context) {
             console.error('🐹 [x-bind:style] Error: ', e);
         }
     });
+
+    // Track effect disposal
+    context.cleanup.push(dispose);
 };
 
 /**
@@ -726,4 +753,38 @@ export function getData(el) {
     }
     
     return context ? context.data : null;
+};
+
+/**
+ * cleanup
+ * --------------
+ * Cleans up all reactive effects and event listeners for an element.
+ * Removes the element's context and all tracked cleanup functions.
+ * 
+ * Call this before removing dynamically created elements to prevent memory leaks.
+ * `x-for` automatically calls this for its rendered items.
+ * 
+ * Example:
+ * ```js
+ *   const el = document.querySelector('[x-data]');
+ *   hamsterx.cleanup(el);  // Cleanup effects and listeners
+ *   el.remove();  // Remove from DOM
+ * 
+ * ```
+ * @param {HTMLElement} el - Element to cleanup
+ */
+export function cleanup(el) {
+    const context = contexts.get(el);
+    if (!context) return;
+    
+    // Run all cleanup functions
+    context.cleanup.forEach(fn => fn());
+    
+    // Remove context (and cleanup array) from WeakMap
+    contexts.delete(el);
+
+    // Also cleanup any nested x-data children
+    el.querySelectorAll('[x-data]').forEach(child => {
+        cleanup(child);
+    });
 };
