@@ -74,7 +74,10 @@ function processElement(el) {
         
         switch(directive) {
         case 'x-text':
-            bindText(el, value, context);
+            bindTextOrHTML(el, value, context);
+            break;
+        case 'x-html':
+            bindTextOrHTML(el, value, context, true);
             break;
         case 'x-show':
             bindShow(el, value, context);
@@ -210,18 +213,21 @@ function initData(el) {
 };
 
 /**
- * bindText
+ * bindTextOrHTML
  * --------
- * Implements x-text directive for reactive text content.
+ * Implements x-text or x-html directive for reactive text/HTML content.
  * Creates an effect that re-runs whenever dependencies change.
  * 
- * Example: `<span x-text="count"></span>`
+ * Examples: 
+ * - `<span x-text="count"></span>`
+ * - `<span x-html="'<strong>Hungry Hamster!</strong>'"></span>`
  * 
- * @param {HTMLElement} el - Element to bind text to
+ * @param {HTMLElement} el - Element to bind text/HTML to
  * @param {string} expr - JavaScript expression to evaluate
  * @param {Object} context - Reactive context
+ * @param {boolean} isHTML - Indicate whether to set `innerHTML` - if `false`, sets `textContent`
  */
-function bindText(el, expr, context) {
+function bindTextOrHTML(el, expr, context, isHTML = false) {
     if (!context) return;
 
     // Create an effect that automatically re-runs when signals change
@@ -229,6 +235,13 @@ function bindText(el, expr, context) {
         try {
             // Evaluate the expression (e.g., "count" or "firstName + ' ' + lastName")
             const value = evaluateExpression(expr, context);
+
+            // Check whether to update innerHTML or textContent
+            if (isHTML) {
+                // Update the HTML content (converts undefined/null to empty string)
+                el.innerHTML = value ?? '';
+                return;
+            }
 
             // Update the text content (converts undefined/null to empty string)
             el.textContent = value ?? '';
