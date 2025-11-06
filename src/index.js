@@ -28,7 +28,6 @@ if (window.hamsterxAutoInit !== false) {
         if (document.body) {
             directives.init();
             document.dispatchEvent(new CustomEvent('hamsterx:ready'));
-            console.log('🐹 hamsterx auto-initialised');
         }
     };
 
