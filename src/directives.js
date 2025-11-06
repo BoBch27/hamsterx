@@ -17,49 +17,28 @@ import { createSignal, createEffect } from "./signal.js";
 const contexts = new WeakMap();
 
 /**
- * Flag to prevent multiple initialisations.
- * @type {boolean}
- */
-let initialised = false;
-
-/**
  * init
- * ----
- * Main entry point - scans the DOM and processes all directives.
- * Called automatically on DOMContentLoaded (unless disabled).
- * Can only be called once for global initialisation.
- * 
- * For dynamically added elements, use initElement() instead.
- * 
- * @param {HTMLElement} root - Element to start scanning from (default: document.body)
- */
-export function init(root = document.body) {
-    if (initialised) {
-		console.warn('🐹 [init] hamsterx already initialised. Use initElement() for new elements.');
-		return;
-	}
-
-    processElement(root);
-    initialised = true;
-};
-
-/**
- * initElement
  * -----------
- * Process directives on a specific element and its children.
- * Use this for dynamically added content after initial page load.
+ * Scans the DOM and processes directives on a specific element and its children.
+ * Called automatically on `DOMContentLoaded` with `document.body` (unless disabled).
  * 
- * Example:
+ * Can also be called for dynamically added content:
  * ```js
  *   const div = document.createElement('div');
  *   div.setAttribute('x-data', '{ count: 0 }');
  *   document.body.appendChild(div);
- *   hamsterx.initElement(div);
+ *   hamsterx.init(div);
  * 
  * ```
- * @param {HTMLElement} el - Element to process
+ * If calling on a previously initialised element, use `cleanup` beforehand:
+ * ```js
+ *   hamsterx.cleanup(document.body);
+ *   hamsterx.init(document.body);
+ * 
+ * ```
+ * @param {HTMLElement} el - Element to start scanning from (default: `document.body`)
  */
-export function initElement(el) {
+export function init(el = document.body) {
   	processElement(el);
 };
 
@@ -741,18 +720,14 @@ function executeStatement(code, context, event = null) {
  * @returns {Object|null} Reactive data proxy or null
  */
 export function getData(el) {
-    if (!initialised) {
-        console.warn('🐹 [getData] hamsterx not initialised yet. Call after DOMContentLoaded or init().');
-        return null;
-    }
-    
     const context = contexts.get(el);
     
     if (!context) {
-        console.warn('🐹 [getData] No x-data found on element: ', el);
+        console.warn(`🐹 [getData] No x-data found on element: ${el}. May need to wait for hamsterx to initialise.`);
+        return null;
     }
     
-    return context ? context.data : null;
+    return context.data;
 };
 
 /**
