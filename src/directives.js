@@ -223,8 +223,8 @@ function initData(el) {
  */
 function bindText(el, expr, context) {
     if (!context) return;
-  
-     // Create an effect that automatically re-runs when signals change
+
+    // Create an effect that automatically re-runs when signals change
     const dispose = createEffect(() => {
         try {
             // Evaluate the expression (e.g., "count" or "firstName + ' ' + lastName")
@@ -448,8 +448,9 @@ function bindFor(el, expr, context) {
  * Attaches event listeners that can access reactive data.
  * Supports await for async event handlers.
  * 
- * Example: `<button x-on:click="count++">Increment</button>`
- * Example: `<form x-on:submit="await handleSubmit($event)">Submit</form>`
+ * Examples: 
+ * - `<button x-on:click="count++">Increment</button>`  
+ * - `<form x-on:submit="await handleSubmit($event)">Submit</form>`
  * 
  * @param {HTMLElement} el - Element to attach listener to
  * @param {string} eventName - Event name (e.g., "click", "input")
@@ -747,7 +748,7 @@ export function getData(el) {
  * Removes the element's context and all tracked cleanup functions.
  * 
  * Call this before removing dynamically created elements to prevent memory leaks.
- * `x-for` automatically calls this for its rendered items.
+ * x-for automatically calls this for its rendered items.
  * 
  * Example:
  * ```js
