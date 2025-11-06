@@ -8,7 +8,7 @@ hamsterx takes Alpine's delightful HTML-first syntax and marries it with Solid's
 
 ## Why hamsterx?
 
-✅ **Tiny**: Small enough to fit in a hamster's cheek pouch. It's just ~2.5KB gzipped (~7KB minified).  
+✅ **Tiny**: Small enough to fit in a hamster's cheek pouch. It's just ~3KB gzipped (~7KB minified).  
 ✅ **Fast**: Signal-based reactivity means surgical DOM updates, not sledgehammer re-renders.  
 ✅ **Familiar**: If you know Alpine.js, you already know hamsterx.  
 ✅ **No Build Step**: Drop it in via CDN and start coding. Your hamster doesn't have time for webpack configs.
@@ -34,7 +34,7 @@ npm install hamsterx
 import hamsterx from 'hamsterx';
 
 // Or import just what you need
-import { init, createSignal, createEffect } from 'hamsterx';
+import { init, cleanup, createSignal, createEffect } from 'hamsterx';
 ```
 
 ### ⚙️ Disabling Auto-Init
@@ -117,7 +117,7 @@ You can define methods that access your reactive data using `this`:
     }
   }"
 >
-  <button x-on:click="increment()">Add seeds to pouches</button>
+  <button x-on:click="increment()">Add seed to pouches</button>
   <button x-on:click="reset()">Empty the pouches</button>
   <span x-text="count"></span>
 </div>
@@ -132,6 +132,16 @@ Reactively updates text content. Like a hamster's name tag that magically change
 ```html
 <span x-text="name"></span>
 ```
+
+### `x-html`
+
+Reactively updates inner HTML. For when your hamster needs to render rich content (use responsibly - sanitise user input!).
+
+```html
+<div x-html="`<strong>${name} is hungry!</strong>`"></div>
+```
+
+**⚠️ Security Warning**: Never use `x-html` with unsanitised user input. Your hamster doesn't want XSS vulnerabilities in its cage!
 
 ### `x-show`
 
@@ -486,6 +496,22 @@ hamsterx automatically removes the `display: none` attribute during initialisati
 </div>
 ```
 
+### Rich Content Rendering (Hamsters love formatted text)
+
+```html
+<div 
+  x-data="{ 
+    content: '<h2>🐹 Hamster Care Guide</h2><p>Feed your hamster <strong>twice daily</strong> with fresh seeds and vegetables.</p>'
+  }"
+>
+  <div x-html="content"></div>
+  
+  <button x-on:click="content = '<p>Content updated! Your hamster is happy! 😊</p>'">
+    Update Guide
+  </button>
+</div>
+```
+
 ### Tab Navigation (Hamsters exploring different tunnels)
 
 ```html
@@ -572,16 +598,47 @@ setCount(5); // Logs: "Count is: 5"
 
 Signals automatically track dependencies and only update what's necessary. It's like your hamster knowing exactly which food pellet changed.
 
-## 🎯 Dynamic Content
+## 🎯 Dynamic Content & Cleanup
 
-Adding hamsters (elements) after page load? Use `initElement()`:
+Adding hamsters (elements) after page load? Use `init()`. Need to remove them cleanly? Use `cleanup()`:
 
 ```javascript
+// Adding new content
 const div = document.createElement('div');
 div.setAttribute('x-data', '{ happy: true }');
 document.body.appendChild(div);
-hamsterx.initElement(div);
+hamsterx.init(div);
+
+// Cleaning up before removal (prevents memory leaks!)
+hamsterx.cleanup(div);
+div.remove();
 ```
+
+### Why cleanup matters
+
+Your hamster is tidy and doesn't like memory leaks! When you remove elements with `x-data`, always call `cleanup()` first to:
+- 🧹 Remove event listeners (no ghost clicks!)
+- 🧹 Dispose reactive effects (no phantom updates!)
+- 🧹 Free up memory (more room for hamster snacks!)
+
+**Good hamster practices:**
+
+```javascript
+// ✅ Clean hamster - proper cleanup
+const modal = document.querySelector('#hamster-modal');
+hamsterx.cleanup(modal);
+modal.remove();
+
+// ✅ Re-initialising? Clean first!
+const component = document.querySelector('[x-data]');
+hamsterx.cleanup(component);  // Clear old effects
+hamsterx.init(component);     // Set up fresh ones
+
+// ❌ Messy hamster - memory leak city!
+document.querySelector('#dirty-modal').remove();  // Event listeners still attached! 😱
+```
+
+**Note:** `x-for` automatically calls `cleanup()` on its rendered items when the list changes, so you don't need to worry about that. Your hamster has your back! 🐹
 
 ## 💻 Programmatic Access
 
@@ -618,7 +675,7 @@ Works in all modern browsers (anything that understands `WeakMap`, `Proxy`, and 
 
 | Framework | Size (min + gzip) |
 |-----------|-------------------|
-| hamsterx | ~2.5KB 🐹 |
+| hamsterx | ~3KB 🐹 |
 | Alpine.js | ~15KB 🏔️ |
 | Vue.js | ~40KB 🗻 |
 | React | ~45KB 🏔️🏔️ |
@@ -628,6 +685,7 @@ Works in all modern browsers (anything that understands `WeakMap`, `Proxy`, and 
 ## ⚠️ Caveats
 
 - Uses `new Function()` and `with` statements for expression evaluation (keep user input sanitised, or your hamster might escape)
+- `x-html` can be dangerous with unsanitised user input - your hamster doesn't want XSS in its cage!
 - No virtual DOM diffing - this is by design for simplicity
 - Doesn't include every Alpine.js feature (we're a hamster, not a capybara)
 
@@ -648,6 +706,8 @@ Found a bug? Want to add features? Your hamster wheel contributions are welcome!
 - [x] Transition support
 - [x] `x-init` directive (hook into element initialisation)
 - [x] Async/await support in `x-on` and `x-init`
+- [x] `x-html` directive (inner HTML binding)
+- [x] Proper cleanup system
 - [ ] Event modifiers (`.prevent`, `.stop`, `.once`)
 - [ ] Benchmarks
 - [ ] Even more hamster emojis
@@ -659,6 +719,7 @@ hamsterx believes in:
 - **HTML-first** - Your markup should read like English, not assembly code.
 - **Minimal abstractions** - Signals are simple. Keep it that way.
 - **Fast enough** - Your users won't wait for your JavaScript hamster to wake up.
+- **Clean cages** - Proper cleanup means no memory leaks. A tidy hamster is a happy hamster!
 
 ## 📜 License
 
