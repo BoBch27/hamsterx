@@ -1,6 +1,6 @@
 {
   "name": "hamsterio",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "A tiny, Alpine-like reactive runtime that uses vanilla JS signals and squeaks fast 🐹",
   "type": "module",
   "main": "dist/hamsterio.esm.js",
