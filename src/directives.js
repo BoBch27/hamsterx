@@ -27,13 +27,13 @@ const contexts = new WeakMap();
  *   const div = document.createElement('div');
  *   div.setAttribute('h-data', '{ count: 0 }');
  *   document.body.appendChild(div);
- *   hamsterx.init(div);
+ *   hamsterio.init(div);
  * 
  * ```
  * If calling on a previously initialised element, use `cleanup` beforehand:
  * ```js
- *   hamsterx.cleanup(document.body);
- *   hamsterx.init(document.body);
+ *   hamsterio.cleanup(document.body);
+ *   hamsterio.init(document.body);
  * 
  * ```
  * @param {HTMLElement} el - Element to start scanning from (default: `document.body`)
@@ -747,7 +747,7 @@ export function getData(el) {
     const context = contexts.get(el);
     
     if (!context) {
-        console.warn(`🐹 [getData] No h-data found on element: ${el}. May need to wait for hamsterx to initialise.`);
+        console.warn(`🐹 [getData] No h-data found on element: ${el}. May need to wait for hamsterio to initialise.`);
         return null;
     }
     
@@ -766,7 +766,7 @@ export function getData(el) {
  * Example:
  * ```js
  *   const el = document.querySelector('[h-data]');
- *   hamsterx.cleanup(el);  // Cleanup effects and listeners
+ *   hamsterio.cleanup(el);  // Cleanup effects and listeners
  *   el.remove();  // Remove from DOM
  * 
  * ```

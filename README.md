@@ -1,16 +1,16 @@
-# 🐹 hamsterx
+# 🐹 hamsterio
 
 **A tiny, Alpine-like reactive runtime that uses vanilla JS signals and squeaks fast.**
 
-hamsterx takes Alpine's delightful HTML-first syntax and marries it with Solid's signal-based reactivity. The result? A tiny powerhouse that delivers updates so fast they'll make your hamster wheel spin.
+hamsterio takes Alpine's delightful HTML-first syntax and marries it with Solid's signal-based reactivity. The result? A tiny powerhouse that delivers updates so fast they'll make your hamster wheel spin.
 
 > *"Why hamsters? Because they're small, fast, and surprisingly powerful. Also, they fit in your pocket."* 🐹
 
-## Why hamsterx?
+## Why hamsterio?
 
 ✅ **Tiny**: Small enough to fit in a hamster's cheek pouch. It's just ~3KB gzipped (~7KB minified).  
 ✅ **Fast**: Signal-based reactivity means surgical DOM updates, not sledgehammer re-renders.  
-✅ **Familiar**: If you know Alpine.js, you already know hamsterx.  
+✅ **Familiar**: If you know Alpine.js, you already know hamsterio.  
 ✅ **No Build Step**: Drop it in via CDN and start coding. Your hamster doesn't have time for webpack configs.
 
 ## 📌 Installation
@@ -18,7 +18,7 @@ hamsterx takes Alpine's delightful HTML-first syntax and marries it with Solid's
 ### 📦 CDN (Recommended for the Alpine.js vibes)
 
 ```html
-<script defer src="https://cdn.jsdelivr.net/npm/hamsterx@latest/dist/hamsterx.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/hamsterio@latest/dist/hamsterio.min.js"></script>
 ```
 
 The `defer` attribute is optional but recommended for performance - it lets your HTML load first before the hamster starts running.
@@ -26,53 +26,53 @@ The `defer` attribute is optional but recommended for performance - it lets your
 ### 📦 NPM (For the build tool enthusiasts)
 
 ```bash
-npm install hamsterx
+npm install hamsterio
 ```
 
 ```javascript
 // Import everything
-import hamsterx from 'hamsterx';
+import hamsterio from 'hamsterio';
 
 // Or import just what you need
-import { init, cleanup, createSignal, createEffect } from 'hamsterx';
+import { init, cleanup, createSignal, createEffect } from 'hamsterio';
 ```
 
 ### ⚙️ Disabling Auto-Init
 
-If you need manual control over initialisation, set this **before** loading hamsterx:
+If you need manual control over initialisation, set this **before** loading hamsterio:
 
 ```html
 <!-- For CDN -->
-<script>window.hamsterxAutoInit = false;</script>
-<script defer src="https://cdn.jsdelivr.net/npm/hamsterx@latest/dist/hamsterx.min.js"></script>
+<script>window.hamsterioAutoInit = false;</script>
+<script defer src="https://cdn.jsdelivr.net/npm/hamsterio@latest/dist/hamsterio.min.js"></script>
 <script defer>
   // Now you control when to init
-  hamsterx.init();
-  console.log('🐹 hamsterx initialised!');
+  hamsterio.init();
+  console.log('🐹 hamsterio initialised!');
 </script>
 ```
 
 **Note:** When using npm/modules, auto-init only works in browser environments. If you're using a bundler, you'll typically want to call `init()` manually anyway:
 
 ```javascript
-import hamsterx from 'hamsterx';
+import hamsterio from 'hamsterio';
 
 // Call init when your app is ready
-hamsterx.init();
+hamsterio.init();
 ```
 
-### ⏰ The `hamsterx:ready` Event
+### ⏰ The `hamsterio:ready` Event
 
-When auto-init runs (CDN or browser usage), hamsterx dispatches a `hamsterx:ready` event on the document. This is useful if you need to run code after the library has initialised:
+When auto-init runs (CDN or browser usage), hamsterio dispatches a `hamsterio:ready` event on the document. This is useful if you need to run code after the library has initialised:
 
 ```html
 <script>
-  document.addEventListener('hamsterx:ready', () => {
+  document.addEventListener('hamsterio:ready', () => {
     console.log('🐹 hamster is ready to run!');
     // Your initialisation logic here
   });
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/hamsterx@latest/dist/hamsterx.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/hamsterio@latest/dist/hamsterio.min.js"></script>
 ```
 
 Note that `init()` is synchronous, so you don't need to wait for this event when calling `init()` manually.
@@ -287,11 +287,11 @@ Runs initialisation code when your component first loads. Perfect for fetching d
 
 ## 🎨 Transitions
 
-Make your hamster's entrances and exits graceful! hamsterx supports smooth transitions using `h-transition-enter` and `h-transition-leave` with `h-show`.
+Make your hamster's entrances and exits graceful! hamsterio supports smooth transitions using `h-transition-enter` and `h-transition-leave` with `h-show`.
 
 ### How It Works
 
-When you toggle visibility with `h-show`, hamsterx can apply CSS classes for smooth animations:
+When you toggle visibility with `h-show`, hamsterio can apply CSS classes for smooth animations:
 
 ```html
 <style>
@@ -349,7 +349,7 @@ You can also use CSS transitions instead of animations:
 
 ### Works With Popular CSS Libraries
 
-hamsterx transitions work perfectly with Tailwind, Animate.css, or any CSS framework:
+hamsterio transitions work perfectly with Tailwind, Animate.css, or any CSS framework:
 
 ```html
 <!-- Tailwind classes -->
@@ -364,18 +364,18 @@ hamsterx transitions work perfectly with Tailwind, Animate.css, or any CSS frame
 
 ### Preventing Flash of Content
 
-To prevent elements from briefly appearing before hamsterx loads, use inline styling: `style="display: none;"`:
+To prevent elements from briefly appearing before hamsterio loads, use inline styling: `style="display: none;"`:
 
 ```html
 <div style="display: none;" h-show="open" h-transition-enter="fade-in">
-  <!-- Hidden until hamsterx initialises, no flash! -->
+  <!-- Hidden until hamsterio initialises, no flash! -->
   🐹 No premature hamster sightings
 </div>
 ```
 
-hamsterx automatically removes the `display: none` attribute during initialisation, then `h-show` takes over.
+hamsterio automatically removes the `display: none` attribute during initialisation, then `h-show` takes over.
 
-**Note:** Transitions work seamlessly with flexbox, grid, and any display type. hamsterx remembers your element's original display value! 🎯
+**Note:** Transitions work seamlessly with flexbox, grid, and any display type. hamsterio remembers your element's original display value! 🎯
 
 ## 💡 Real-World Examples
 
@@ -582,10 +582,10 @@ hamsterx automatically removes the `display: none` attribute during initialisati
 
 ## ⚡ Working with Signals (For the nerds)
 
-Under the hood, hamsterx uses signals - a reactive primitive that's simpler than your hamster's exercise routine.
+Under the hood, hamsterio uses signals - a reactive primitive that's simpler than your hamster's exercise routine.
 
 ```javascript
-import { createSignal, createEffect } from 'hamsterx';
+import { createSignal, createEffect } from 'hamsterio';
 
 const [count, setCount] = createSignal(0);
 
@@ -607,10 +607,10 @@ Adding hamsters (elements) after page load? Use `init()`. Need to remove them cl
 const div = document.createElement('div');
 div.setAttribute('h-data', '{ happy: true }');
 document.body.appendChild(div);
-hamsterx.init(div);
+hamsterio.init(div);
 
 // Cleaning up before removal (prevents memory leaks!)
-hamsterx.cleanup(div);
+hamsterio.cleanup(div);
 div.remove();
 ```
 
@@ -626,13 +626,13 @@ Your hamster is tidy and doesn't like memory leaks! When you remove elements wit
 ```javascript
 // ✅ Clean hamster - proper cleanup
 const modal = document.querySelector('#hamster-modal');
-hamsterx.cleanup(modal);
+hamsterio.cleanup(modal);
 modal.remove();
 
 // ✅ Re-initialising? Clean first!
 const component = document.querySelector('[h-data]');
-hamsterx.cleanup(component);  // Clear old effects
-hamsterx.init(component);     // Set up fresh ones
+hamsterio.cleanup(component);  // Clear old effects
+hamsterio.init(component);     // Set up fresh ones
 
 // ❌ Messy hamster - memory leak city!
 document.querySelector('#dirty-modal').remove();  // Event listeners still attached! 😱
@@ -646,7 +646,7 @@ Need to update data from outside (like reaching into the hamster cage)? Use `get
 
 ```javascript
 const el = document.querySelector('[h-data]');
-const data = hamsterx.getData(el);
+const data = hamsterio.getData(el);
 data.count = 42; // Reactively updates! The hamster notices immediately.
 ```
 
@@ -654,14 +654,14 @@ data.count = 42; // Reactively updates! The hamster notices immediately.
 - Integration with third-party libraries (teaching old hamsters new tricks)
 - External form handling (hamster data entry)
 - Unit testing (making sure your hamster behaves)
-- Console debugging (`console.log(hamsterx.getData(el))` - peek at the hamster)
+- Console debugging (`console.log(hamsterio.getData(el))` - peek at the hamster)
 
 **Example - Plotly chart integration:**
 
 ```javascript
 const chart = document.getElementById('hamster-activity-chart');
 chart.on('plotly_click', (data) => {
-  const hamsterData = hamsterx.getData(document.getElementById('stats'));
+  const hamsterData = hamsterio.getData(document.getElementById('stats'));
   hamsterData.selectedDay = data.points[0].x;
   hamsterData.wheelRotations = data.points[0].y;
 });
@@ -675,7 +675,7 @@ Works in all modern browsers (anything that understands `WeakMap`, `Proxy`, and 
 
 | Framework | Size (min + gzip) |
 |-----------|-------------------|
-| hamsterx | ~3KB 🐹 |
+| hamsterio | ~3KB 🐹 |
 | Alpine.js | ~15KB 🏔️ |
 | Vue.js | ~40KB 🗻 |
 | React | ~45KB 🏔️🏔️ |
@@ -714,7 +714,7 @@ Found a bug? Want to add features? Your hamster wheel contributions are welcome!
 
 ## 💭 Philosophy
 
-hamsterx believes in:
+hamsterio believes in:
 - **Simplicity over complexity** - Like a hamster wheel, not a Rube Goldberg machine.
 - **HTML-first** - Your markup should read like English, not assembly code.
 - **Minimal abstractions** - Signals are simple. Keep it that way.

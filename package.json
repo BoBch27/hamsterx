@@ -1,15 +1,15 @@
 {
-  "name": "hamsterx",
+  "name": "hamsterio",
   "version": "0.4.0",
   "description": "A tiny, Alpine-like reactive runtime that uses vanilla JS signals and squeaks fast 🐹",
   "type": "module",
-  "main": "dist/hamsterx.esm.js",
+  "main": "dist/hamsterio.esm.js",
   "exports": {
-    "import": "./dist/hamsterx.esm.js"
+    "import": "./dist/hamsterio.esm.js"
   },
   "files": [
-    "dist/hamsterx.esm.js",
-    "dist/hamsterx.min.js"
+    "dist/hamsterio.esm.js",
+    "dist/hamsterio.min.js"
   ],
   "scripts": {
     "dev": "node build.config.js --watch",
@@ -17,13 +17,13 @@
     "pack": "npm run build && npm pack --dry-run",
     "publish": "npm run build && npm publish"
   },
-  "homepage": "https://github.com/BoBch27/hamsterx#readme",
+  "homepage": "https://github.com/BoBch27/hamsterio#readme",
   "bugs": {
-    "url": "https://github.com/BoBch27/hamsterx/issues"
+    "url": "https://github.com/BoBch27/hamsterio/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/BoBch27/hamsterx.git"
+    "url": "git+https://github.com/BoBch27/hamsterio.git"
   },
   "license": "MIT",
   "author": "Bobby Donev <hello@bobbydonev.com>",
