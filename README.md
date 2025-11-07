@@ -6,14 +6,16 @@ hamsterio takes Alpine's delightful HTML-first syntax and marries it with Solid'
 
 > *"Why hamsters? Because they're small, fast, and surprisingly powerful. Also, they fit in your pocket."* 🐹
 
-## Why hamsterio?
+## Why hamsterio? <a id="why-hamsterio"></a>
 
-✅ **Tiny**: Small enough to fit in a hamster's cheek pouch. It's just ~3KB gzipped (~7KB minified).  
+✅ **Tiny**: Small enough to fit in a hamster's cheek pouch. It's under 3KB gzipped (~7KB minified).  
 ✅ **Fast**: Signal-based reactivity means surgical DOM updates, not sledgehammer re-renders.  
 ✅ **Familiar**: If you know Alpine.js, you already know hamsterio.  
 ✅ **No Build Step**: Drop it in via CDN and start coding. Your hamster doesn't have time for webpack configs.
 
-## 📌 Installation
+## 📌 Installation <a id="installation"></a>
+
+> **⬆️ Migrating from hamsterx?** This package was renamed from `hamsterx` to `hamsterio` in v0.5.0. Update your directives from `x-*` to `h-*` and you're good to go!
 
 ### 📦 CDN (Recommended for the Alpine.js vibes)
 
@@ -77,7 +79,7 @@ When auto-init runs (CDN or browser usage), hamsterio dispatches a `hamsterio:re
 
 Note that `init()` is synchronous, so you don't need to wait for this event when calling `init()` manually.
 
-## 🚀 Quick Start
+## 🚀 Quick Start <a id="quick-start"></a>
 
 ```html
 <div h-data="{ count: 0 }">
@@ -89,7 +91,35 @@ Note that `init()` is synchronous, so you don't need to wait for this event when
 
 That's it. No compilation, no virtual DOM, no existential crisis about framework choices.
 
-## 📖 Directives
+## Table of Contents
+
+- [Why hamsterio?](#why-hamsterio)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Directives](#directives)
+  - [h-data](#h-data)
+  - [h-text](#h-text)
+  - [h-html](#h-html)
+  - [h-show](#h-show)
+  - [h-bind](#h-bind)
+  - [h-on](#h-on)
+  - [h-for](#h-for)
+  - [h-init](#h-init)
+- [Transitions](#transitions)
+- [Real-World Examples](#real-world-examples)
+- [Working with Signals](#working-with-signals)
+- [Dynamic Content & Cleanup](#dynamic-content--cleanup)
+- [Programmatic Access](#programmatic-access)
+- [Browser Support](#browser-support)
+- [Size Comparison](#size-comparison)
+- [Caveats](#caveats)
+- [Contributing](#contributing)
+- [Roadmap](#roadmap)
+- [Philosophy](#philosophy)
+- [License](#license)
+- [Credits](#credits)
+
+## 📖 Directives <a id="directives"></a>
 
 ### `h-data`
 
@@ -285,7 +315,7 @@ Runs initialisation code when your component first loads. Perfect for fetching d
 
 **Pro tip:** Use `h-init` for data fetching, third-party library initialisation, or any setup logic your hamster needs before getting to work!
 
-## 🎨 Transitions
+## 🎨 Transitions <a id="transitions"></a>
 
 Make your hamster's entrances and exits graceful! hamsterio supports smooth transitions using `h-transition-enter` and `h-transition-leave` with `h-show`.
 
@@ -377,7 +407,7 @@ hamsterio automatically removes the `display: none` attribute during initialisat
 
 **Note:** Transitions work seamlessly with flexbox, grid, and any display type. hamsterio remembers your element's original display value! 🎯
 
-## 💡 Real-World Examples
+## 💡 Real-World Examples <a id="real-world-examples"></a>
 
 ### Dropdown Menu (Every hamster needs options)
 
@@ -580,7 +610,7 @@ hamsterio automatically removes the `display: none` attribute during initialisat
 </div>
 ```
 
-## ⚡ Working with Signals (For the nerds)
+## ⚡ Working with Signals (For the nerds) <a id="working-with-signals"></a>
 
 Under the hood, hamsterio uses signals - a reactive primitive that's simpler than your hamster's exercise routine.
 
@@ -598,7 +628,7 @@ setCount(5); // Logs: "Count is: 5"
 
 Signals automatically track dependencies and only update what's necessary. It's like your hamster knowing exactly which food pellet changed.
 
-## 🎯 Dynamic Content & Cleanup
+## 🎯 Dynamic Content & Cleanup <a id="dynamic-content--cleanup"></a>
 
 Adding hamsters (elements) after page load? Use `init()`. Need to remove them cleanly? Use `cleanup()`:
 
@@ -640,7 +670,7 @@ document.querySelector('#dirty-modal').remove();  // Event listeners still attac
 
 **Note:** `h-for` automatically calls `cleanup()` on its rendered items when the list changes, so you don't need to worry about that. Your hamster has your back! 🐹
 
-## 💻 Programmatic Access
+## 💻 Programmatic Access <a id="programmatic-access"></a>
 
 Need to update data from outside (like reaching into the hamster cage)? Use `getData()`:
 
@@ -667,11 +697,11 @@ chart.on('plotly_click', (data) => {
 });
 ```
 
-## 🌐 Browser Support
+## 🌐 Browser Support <a id="browser-support"></a>
 
 Works in all modern browsers (anything that understands `WeakMap`, `Proxy`, and the concept of a hamster).
 
-## 📊 Size Comparison
+## 📊 Size Comparison <a id="size-comparison"></a>
 
 | Framework | Size (min + gzip) |
 |-----------|-------------------|
@@ -682,14 +712,14 @@ Works in all modern browsers (anything that understands `WeakMap`, `Proxy`, and 
 
 *Your hamster is judging your bundle size.*
 
-## ⚠️ Caveats
+## ⚠️ Caveats <a id="caveats"></a>
 
 - Uses `new Function()` and `with` statements for expression evaluation (keep user input sanitised, or your hamster might escape)
 - `h-html` can be dangerous with unsanitised user input - your hamster doesn't want XSS in its cage!
 - No virtual DOM diffing - this is by design for simplicity
 - Doesn't include every Alpine.js feature (we're a hamster, not a capybara)
 
-## 🤝 Contributing
+## 🤝 Contributing <a id="contributing"></a>
 
 Found a bug? Want to add features? Your hamster wheel contributions are welcome!
 
@@ -699,7 +729,7 @@ Found a bug? Want to add features? Your hamster wheel contributions are welcome!
 4. Push to the branch (`git push origin feature/faster-hamster`)
 5. Open a Pull Request
 
-## 🗺️ Roadmap
+## 🗺️ Roadmap <a id="roadmap"></a>
 
 - [x] Methods in `h-data`
 - [x] `h-bind` directive (attribute binding)
@@ -712,7 +742,7 @@ Found a bug? Want to add features? Your hamster wheel contributions are welcome!
 - [ ] Benchmarks
 - [ ] Even more hamster emojis
 
-## 💭 Philosophy
+## 💭 Philosophy <a id="philosophy"></a>
 
 hamsterio believes in:
 - **Simplicity over complexity** - Like a hamster wheel, not a Rube Goldberg machine.
@@ -721,11 +751,11 @@ hamsterio believes in:
 - **Fast enough** - Your users won't wait for your JavaScript hamster to wake up.
 - **Clean cages** - Proper cleanup means no memory leaks. A tidy hamster is a happy hamster!
 
-## 📜 License
+## 📜 License <a id="license"></a>
 
 MIT - Free as a hamster running in an open field
 
-## 🙏 Credits
+## 🙏 Credits <a id="credits"></a>
 
 Inspired by the brilliant work of:
 - [Alpine.js](https://github.com/alpinejs/alpine) by Caleb Porzio
