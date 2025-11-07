@@ -4,13 +4,13 @@ import { createSignal, createEffect } from "./signal.js";
  * Directive system
  * -------------------------------------
  * Using module-level closures (similar to signals).
- * Handles various "x-*" HTML attributes.
+ * Handles various "h-*" HTML attributes.
  * 
  * @module directives
  */
 
 /**
- * Stores reactive contexts for each element with x-data. Automatically 
+ * Stores reactive contexts for each element with h-data. Automatically 
  * garbage collects when elements are removed from DOM.
  * @type {WeakMap}
  */
@@ -25,7 +25,7 @@ const contexts = new WeakMap();
  * Can also be called for dynamically added content:
  * ```js
  *   const div = document.createElement('div');
- *   div.setAttribute('x-data', '{ count: 0 }');
+ *   div.setAttribute('h-data', '{ count: 0 }');
  *   document.body.appendChild(div);
  *   hamsterx.init(div);
  * 
@@ -51,7 +51,7 @@ export function init(el = document.body) {
  * processElement
  * --------------
  * Recursively processes an element and all its children.
- * Order matters: x-data must be processed first to establish context.
+ * Order matters: h-data must be processed first to establish context.
  * 
  * @param {HTMLElement} el - Element to process
  */
@@ -59,8 +59,8 @@ function processElement(el) {
     // Skip text nodes, comments, etc - only process element nodes
     if (el.nodeType !== 1) return;
 
-    // Process x-data first to establish "scope" for all other directives
-    if (el.hasAttribute('x-data')) {
+    // Process h-data first to establish "scope" for all other directives
+    if (el.hasAttribute('h-data')) {
         initData(el);
     }
 
@@ -69,38 +69,38 @@ function processElement(el) {
 
     // Process all other directives on this element
     getDirectives(el).forEach(({ name, value }) => {
-        // Split directive name to handle modifiers (e.g. "x-on:click" -> ["x-on", "click"])
+        // Split directive name to handle modifiers (e.g. "h-on:click" -> ["h-on", "click"])
         const [directive, modifier] = name.split(':');
         
         switch(directive) {
-        case 'x-text':
+        case 'h-text':
             bindTextOrHTML(el, value, context);
             break;
-        case 'x-html':
+        case 'h-html':
             bindTextOrHTML(el, value, context, true);
             break;
-        case 'x-show':
+        case 'h-show':
             bindShow(el, value, context);
             break;
-		case 'x-for':
+		case 'h-for':
             bindFor(el, value, context);
-            return; // Don't process children, x-for handles it
-        case 'x-on':
+            return; // Don't process children, h-for handles it
+        case 'h-on':
             bindEvent(el, modifier, value, context);
             break;
-        case 'x-bind':
+        case 'h-bind':
             bindAttribute(el, modifier, value, context);
             break;
         }
     });
 
-    // Process x-init last (when element has initialised)
-    if (el.hasAttribute('x-init')) {
-        bindInit(el.getAttribute('x-init'), context);
+    // Process h-init last (when element has initialised)
+    if (el.hasAttribute('h-init')) {
+        bindInit(el.getAttribute('h-init'), context);
     }
 
-    // Process children recursively (unless x-for handled it)
-    if (!el.hasAttribute('x-for')) {
+    // Process children recursively (unless h-for handled it)
+    if (!el.hasAttribute('h-for')) {
    		Array.from(el.children).forEach(child => processElement(child));
 	}
 };
@@ -108,14 +108,14 @@ function processElement(el) {
 /**
  * getDirectives
  * -------------
- * Extracts all x-* attributes from an element.
+ * Extracts all h-* attributes from an element.
  * 
  * @param {HTMLElement} el - Element to scan
  * @returns {Array} Array of {name, value} objects
  */
 function getDirectives(el) {
     return Array.from(el.attributes)
-        .filter(attr => attr.name.startsWith('x-'))
+        .filter(attr => attr.name.startsWith('h-'))
         .map(attr => ({ name: attr.name, value: attr.value }));
 };
 
@@ -123,10 +123,10 @@ function getDirectives(el) {
  * getContext
  * ----------
  * Retrieves the reactive context for an element.
- * Walks up the DOM tree to find the nearest x-data parent if needed.
+ * Walks up the DOM tree to find the nearest h-data parent if needed.
  * 
  * @param {HTMLElement} el - Element to get context for
- * @returns {Object|null} Context object or null if no x-data parent found
+ * @returns {Object|null} Context object or null if no h-data parent found
  */
 function getContext(el) {
     // Check if this element has its own context
@@ -146,15 +146,15 @@ function getContext(el) {
 /**
  * initData
  * --------
- * Processes x-data attribute and creates a reactive context.
+ * Processes h-data attribute and creates a reactive context.
  * Wraps each data property in a signal for automatic reactivity.
  * 
- * Example: `x-data="{ count: 0, name: 'John' }"`
+ * Example: `h-data="{ count: 0, name: 'John' }"`
  * 
- * @param {HTMLElement} el - Element with x-data attribute
+ * @param {HTMLElement} el - Element with h-data attribute
  */
 function initData(el) {
-    const expr = el.getAttribute('x-data');
+    const expr = el.getAttribute('h-data');
     let data = {};
 
     try {
@@ -164,7 +164,7 @@ function initData(el) {
             data = fn();
         }
     } catch (e) {
-        console.error('🐹 [x-data] Parse error: ', e);
+        console.error('🐹 [h-data] Parse error: ', e);
         return;
     }
 
@@ -215,12 +215,12 @@ function initData(el) {
 /**
  * bindTextOrHTML
  * --------
- * Implements x-text or x-html directive for reactive text/HTML content.
+ * Implements h-text or h-html directive for reactive text/HTML content.
  * Creates an effect that re-runs whenever dependencies change.
  * 
  * Examples: 
- * - `<span x-text="count"></span>`
- * - `<span x-html="'<strong>Hungry Hamster!</strong>'"></span>`
+ * - `<span h-text="count"></span>`
+ * - `<span h-html="'<strong>Hungry Hamster!</strong>'"></span>`
  * 
  * @param {HTMLElement} el - Element to bind text/HTML to
  * @param {string} expr - JavaScript expression to evaluate
@@ -246,7 +246,7 @@ function bindTextOrHTML(el, expr, context, isHTML = false) {
             // Update the text content (converts undefined/null to empty string)
             el.textContent = value ?? '';
         } catch (e) {
-            console.error('🐹 [x-text] Error: ', e);
+            console.error('🐹 [h-text] Error: ', e);
         }
     });
 
@@ -257,10 +257,10 @@ function bindTextOrHTML(el, expr, context, isHTML = false) {
 /**
  * bindShow
  * --------
- * Implements x-show directive for conditional visibility.
+ * Implements h-show directive for conditional visibility.
  * Toggles display CSS property based on expression truthiness.
  * 
- * Example: `<div x-show="isVisible">Content</div>`
+ * Example: `<div h-show="isVisible">Content</div>`
  * 
  * @param {HTMLElement} el - Element to show/hide
  * @param {string} expr - JavaScript expression to evaluate
@@ -279,8 +279,8 @@ function bindShow(el, expr, context) {
     }
 
     // Store transition classes (if present)
-    const enterClass = el.getAttribute('x-transition-enter')?.split(' ').filter(c => c);
-    const leaveClass = el.getAttribute('x-transition-leave')?.split(' ').filter(c => c);
+    const enterClass = el.getAttribute('h-transition-enter')?.split(' ').filter(c => c);
+    const leaveClass = el.getAttribute('h-transition-leave')?.split(' ').filter(c => c);
 
     const dispose = createEffect(() => {
         try {
@@ -334,7 +334,7 @@ function bindShow(el, expr, context) {
                 }
             }
         } catch (e) {
-            console.error('🐹 [x-show] Error: ', e);
+            console.error('🐹 [h-show] Error: ', e);
         }
     });
 
@@ -345,12 +345,12 @@ function bindShow(el, expr, context) {
 /**
  * bindFor
  * -------
- * Implements x-for directive for list rendering.
+ * Implements h-for directive for list rendering.
  * Clones a template element for each item in an array.
  * 
  * Supports two syntaxes:
- * - Simple: `x-for="item in items"`
- * - With index: `x-for="(item, index) in items"`
+ * - Simple: `h-for="item in items"`
+ * - With index: `h-for="(item, index) in items"`
  * 
  * @param {HTMLElement} el - Template element to repeat
  * @param {string} expr - Loop expression
@@ -363,7 +363,7 @@ function bindFor(el, expr, context) {
 	// Matches: "item in items" or "(item, index) in items"
 	const match = expr.match(/^\s*(?:\(([^,]+),\s*([^)]+)\)|([^)\s]+))\s+in\s+(.+)$/);
 	if (!match) {
-		console.error('🐹 [x-for] Invalid syntax: ', expr);
+		console.error('🐹 [h-for] Invalid syntax: ', expr);
 		return;
 	}
 
@@ -376,16 +376,16 @@ function bindFor(el, expr, context) {
     const isTemplate = el.tagName === 'TEMPLATE';
     const templateContent = isTemplate ? el.content : el;
 
-	// Clone the template and remove x-for to prevent infinite loop (if not template tag)
+	// Clone the template and remove h-for to prevent infinite loop (if not template tag)
 	const template = templateContent.cloneNode(true);
     if (!isTemplate) {
-        template.removeAttribute('x-for');
+        template.removeAttribute('h-for');
     }
 	
 	// Replace original element with a comment marker
 	// This marker keeps track of where to insert rendered items
 	const parent = el.parentElement;
-	const marker = document.createComment('x-for');
+	const marker = document.createComment('h-for');
 	parent.replaceChild(marker, el);
 
 	// Keep track of rendered nodes for cleanup
@@ -446,7 +446,7 @@ function bindFor(el, expr, context) {
                 });
 			});
 		} catch (e) {
-			console.error('🐹 [x-for] Error: ', e);
+			console.error('🐹 [h-for] Error: ', e);
 		}
 	});
 
@@ -457,13 +457,13 @@ function bindFor(el, expr, context) {
 /**
  * bindEvent
  * ---------
- * Implements x-on directive for event handling.
+ * Implements h-on directive for event handling.
  * Attaches event listeners that can access reactive data.
  * Supports await for async event handlers.
  * 
  * Examples: 
- * - `<button x-on:click="count++">Increment</button>`  
- * - `<form x-on:submit="await handleSubmit($event)">Submit</form>`
+ * - `<button h-on:click="count++">Increment</button>`  
+ * - `<form h-on:submit="await handleSubmit($event)">Submit</form>`
  * 
  * @param {HTMLElement} el - Element to attach listener to
  * @param {string} eventName - Event name (e.g., "click", "input")
@@ -479,7 +479,7 @@ function bindEvent(el, eventName, stmt, context) {
     // - $data: the reactive data (via 'with' statement)
     const handler = (e) => {
         executeStatement(stmt, context, e).catch(err => {
-            console.error(`🐹 [x-on:${eventName}] Error: `, err);
+            console.error(`🐹 [h-on:${eventName}] Error: `, err);
         });
     };
 
@@ -495,15 +495,15 @@ function bindEvent(el, eventName, stmt, context) {
 /**
  * bindAttribute
  * -------------
- * Implements x-bind directive for reactive attribute binding.
+ * Implements h-bind directive for reactive attribute binding.
  * Supports special handling for class and style attributes.
  * 
  * Examples:
- * - `<div x-bind:class="active ? 'bg-blue' : 'bg-gray'"></div>`
- * - `<div x-bind:class="{ 'active': isActive, 'disabled': isDisabled }"></div>`
- * - `<img x-bind:src="imageUrl" x-bind:alt="description">`
- * - `<button x-bind:disabled="isLoading">Submit</button>`
- * - `<div x-bind:style="{ color: textColor, fontSize: size + 'px' }"></div>`
+ * - `<div h-bind:class="active ? 'bg-blue' : 'bg-gray'"></div>`
+ * - `<div h-bind:class="{ 'active': isActive, 'disabled': isDisabled }"></div>`
+ * - `<img h-bind:src="imageUrl" h-bind:alt="description">`
+ * - `<button h-bind:disabled="isLoading">Submit</button>`
+ * - `<div h-bind:style="{ color: textColor, fontSize: size + 'px' }"></div>`
  * 
  * @param {HTMLElement} el - Element to bind attribute to
  * @param {string} attrName - Attribute name (e.g., "class", "src", "disabled")
@@ -547,7 +547,7 @@ function bindAttribute(el, attrName, expr, context) {
                 el.setAttribute(attrName, value);
             }
         } catch (e) {
-            console.error(`🐹 [x-bind:${attrName}] Error: `, e);
+            console.error(`🐹 [h-bind:${attrName}] Error: `, e);
         }
     });
 
@@ -561,10 +561,10 @@ function bindAttribute(el, attrName, expr, context) {
  * Special handler for class attribute binding.
  * Supports object syntax for conditional classes.
  * 
- * Example: `x-bind:class="{ 'active': isActive, 'disabled': !isEnabled }"`
+ * Example: `h-bind:class="{ 'active': isActive, 'disabled': !isEnabled }"`
  * 
  * For simple string classes, just use the class attribute normally.
- * For ternaries, use the expression directly: `x-bind:class="active ? 'bg-blue' : 'bg-gray'"`
+ * For ternaries, use the expression directly: `h-bind:class="active ? 'bg-blue' : 'bg-gray'"`
  * 
  * @param {HTMLElement} el - Element to bind classes to
  * @param {string} expr - JavaScript expression
@@ -596,7 +596,7 @@ function bindClass(el, expr, context) {
             // Apply the final class list
             el.className = Array.from(classes).join(' ');
         } catch (e) {
-            console.error('🐹 [x-bind:class] Error: ', e);
+            console.error('🐹 [h-bind:class] Error: ', e);
         }
     });
 
@@ -608,7 +608,7 @@ function bindClass(el, expr, context) {
  * bindStyle
  * ---------
  * Special handler for style attribute binding.
- * Supports object syntax: `x-bind:style="{ color: textColor, fontSize: size + 'px' }"`
+ * Supports object syntax: `h-bind:style="{ color: textColor, fontSize: size + 'px' }"`
  * 
  * @param {HTMLElement} el - Element to bind styles to
  * @param {string} expr - JavaScript expression (should evaluate to object)
@@ -640,7 +640,7 @@ function bindStyle(el, expr, context) {
                 };
             }
         } catch (e) {
-            console.error('🐹 [x-bind:style] Error: ', e);
+            console.error('🐹 [h-bind:style] Error: ', e);
         }
     });
 
@@ -651,11 +651,11 @@ function bindStyle(el, expr, context) {
 /**
  * bindInit
  * --------
- * Implements x-init directive for initialisation code.
+ * Implements h-init directive for initialisation code.
  * Runs once when the element is first processed.
  * Supports await for async operations.
  * 
- * Example: `<div x-init="data = await (await fetch('/api')).json()">`
+ * Example: `<div h-init="data = await (await fetch('/api')).json()">`
  * 
  * @param {string} stmt - JavaScript statement to execute
  * @param {Object} context - Reactive context
@@ -664,7 +664,7 @@ function bindInit(stmt, context) {
     if (!context) return;
 
     executeStatement(stmt, context).catch(err => {
-        console.error('🐹 [x-init] Error: ', err);
+        console.error('🐹 [h-init] Error: ', err);
     });
 };
 
@@ -706,13 +706,13 @@ function evaluateExpression(expr, context) {
  * 
  * @param {string} code - JavaScript statement
  * @param {Object} context - Reactive context
- * @param {Event} [event] - Optional event object (for x-on)
+ * @param {Event} [event] - Optional event object (for h-on)
  * @returns {Promise} Promise that resolves when execution completes
  */
 function executeStatement(code, context, event = null) {
     try {
         // Create an async function to support await
-        // Include $event for x-on compatibility
+        // Include $event for h-on compatibility
         const fn = new Function('$event', '$el', '$data', `
             return (async () => {
                 with($data) {
@@ -735,7 +735,7 @@ function executeStatement(code, context, event = null) {
  * Gets the reactive data for a given element.
  * Allows programmatic updates from outside.
  * 
- * @param {HTMLElement} el - Element with x-data attribute
+ * @param {HTMLElement} el - Element with h-data attribute
  * @returns {Object|null} Reactive data proxy or null
  */
 export function getData(el) {
@@ -747,7 +747,7 @@ export function getData(el) {
     const context = contexts.get(el);
     
     if (!context) {
-        console.warn(`🐹 [getData] No x-data found on element: ${el}. May need to wait for hamsterx to initialise.`);
+        console.warn(`🐹 [getData] No h-data found on element: ${el}. May need to wait for hamsterx to initialise.`);
         return null;
     }
     
@@ -761,11 +761,11 @@ export function getData(el) {
  * Removes the element's context and all tracked cleanup functions.
  * 
  * Call this before removing dynamically created elements to prevent memory leaks.
- * x-for automatically calls this for its rendered items.
+ * h-for automatically calls this for its rendered items.
  * 
  * Example:
  * ```js
- *   const el = document.querySelector('[x-data]');
+ *   const el = document.querySelector('[h-data]');
  *   hamsterx.cleanup(el);  // Cleanup effects and listeners
  *   el.remove();  // Remove from DOM
  * 
@@ -787,8 +787,8 @@ export function cleanup(el) {
     // Remove context (and cleanup array) from WeakMap
     contexts.delete(el);
 
-    // Also cleanup any nested x-data children
-    el.querySelectorAll('[x-data]').forEach(child => {
+    // Also cleanup any nested h-data children
+    el.querySelectorAll('[h-data]').forEach(child => {
         cleanup(child);
     });
 };
